@@ -1,4 +1,4 @@
-# Qt 海天鹰媒体播放器
+# 海天鹰媒体播放器_QtAV版
 ![alt](preview.jpg)  
 Linux 平台基于 Qt5 和 QtAV 的媒体播放程序。  
 已编译好的 HTYMediaPlayer 程序适用64位Linux系统Qt5环境，双击运行，其他版本请自行编译。  
