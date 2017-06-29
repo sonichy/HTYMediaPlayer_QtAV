@@ -105,7 +105,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableWidget->setStyleSheet("QTableWidget{color:white; background-color:black;} QTableWidget::item:selected{background-color:#222222;}");
     //connect(ui->tableWidget,SIGNAL(currentCellChanged(int,int,int,int)),this,SLOT(playTV(int,int,int,int)));
     connect(ui->tableWidget,SIGNAL(cellClicked(int,int)),this,SLOT(playTV(int,int)));
-    fillTable("./tv.txt");
+    fillTable("tv.txt");
 
     QStringList Largs=QApplication::arguments();
     qDebug() << Largs;
@@ -137,6 +137,7 @@ void MainWindow::open(QString path)
     ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     ui->statusBar->showMessage("打开 " + path);
     setWindowTitle(QFileInfo(path).fileName());
+    ui->tableWidget->hide();
 }
 
 void MainWindow::on_action_openURL_triggered()
@@ -635,11 +636,12 @@ void MainWindow::fitDesktop(){
 
 void MainWindow::playTV(int row,int column){
     QString surl=ui->tableWidget->item(row,1)->text();
-    //qDebug() << surl;
-    player->play(surl);    
-    setWindowTitle(ui->tableWidget->item(row,0)->text());
-    ui->statusBar->showMessage("直播 "+surl);
-    ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    if(surl!=""){
+        player->play(surl);
+        setWindowTitle(ui->tableWidget->item(row,0)->text());
+        ui->statusBar->showMessage("直播 "+surl);
+        ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    }
 }
 
 void MainWindow::fillTable(QString filename){
@@ -650,14 +652,17 @@ void MainWindow::fillTable(QString filename){
         QString s=ts.readAll();
         file->close();
         QStringList line=s.split("\n");
-        for(int i=0;i<line.size();i++)
+        for(int i=0;i<line.size();i++){
+            ui->tableWidget->insertRow(i);
             if(line.at(i).contains(",")){
                 QStringList strlist=line.at(i).split(",");
-                //int rownum=ui->tableWidget->rowCount();
-                ui->tableWidget->insertRow(i);
                 ui->tableWidget->setItem(i,0,new QTableWidgetItem(strlist.at(0)));
                 ui->tableWidget->setItem(i,1,new QTableWidgetItem(strlist.at(1).split("#").at(0)));
+            }else{
+                ui->tableWidget->setItem(i,0,new QTableWidgetItem(line.at(i)));
+                ui->tableWidget->setItem(i,1,new QTableWidgetItem(""));
             }
+        }
         ui->tableWidget->resizeColumnsToContents();
         ui->statusBar->showMessage("导入 " + filename + "，共" + QString::number(ui->tableWidget->rowCount()) + "个节目");
     }
