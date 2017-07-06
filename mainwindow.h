@@ -2,7 +2,15 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QtAVWidgets>
+#include <QtAV/AVPlayer.h>
+#include <QtAV>
+#include <QLabel>
+#include <QDesktopWidget>
+#include "controlpanel.h"
+#include "ui_controlpanel.h"
 
+using namespace QtAV;
 namespace Ui {
     class MainWindow;
 }
@@ -11,12 +19,27 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
 private:
     Ui::MainWindow *ui;
+    QString filename,STimeET;
+    QMenu *popmenu;
+    QAction *PMAFullscreen,*PMACapture;
+    int volume,cn,cnn;
+    float sr;
+    QLabel *labelTL;
+    AVPlayer *player;
+    GraphicsItemRenderer *videoItem;
+    QDesktopWidget *desktop;
+    QPoint posw;
+    bool m_bPressed;
+    QPoint m_point;
+    QImage imagec[16];
+    bool isListShow;
     void createPopmenu();
     void closeEvent(QCloseEvent *e);
     void mouseDoubleClickEvent(QMouseEvent* event);
@@ -24,6 +47,8 @@ private:
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void open(QString path);
+    ControlPanel *CP;
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void on_action_open_triggered();
@@ -49,15 +74,15 @@ private slots:
     void on_action_changelog_triggered();
     void on_action_aboutQtAV_triggered();
     void on_action_about_triggered();
-    void on_btnPlay_clicked();    
-    void on_btnStop_clicked();
-    void on_btnSeekB_clicked();
-    void on_btnSeekF_clicked();
-    void on_btnSkipB_clicked();
-    void on_btnSkipF_clicked();
-    void on_btnMute_clicked();
-    void on_btnFullscreen_clicked();
-    void on_btnList_clicked();
+    void on_pushButtonPlay_clicked();
+    void on_pushButtonStop_clicked();
+    void on_pushButtonSeekB_clicked();
+    void on_pushButtonSeekF_clicked();
+    void on_pushButtonSkipB_clicked();
+    void on_pushButtonSkipF_clicked();
+    void on_pushButtonMute_clicked();
+    void on_pushButtonFullscreen_clicked();
+    void on_pushButtonList_clicked();
     void durationChange();
     void positionChange(qint64 d);    
     void volumeChange(qreal v);
@@ -73,6 +98,7 @@ private slots:
     void contextMenuEvent(QContextMenuEvent *event);
     void setSTime(int v);
     void timeoutTL();
+    void hideCP();
     void timeoutMouseMove();
     void saveImage(QImage image);
     void scale(float s);

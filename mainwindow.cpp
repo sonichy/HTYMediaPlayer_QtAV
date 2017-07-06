@@ -8,9 +8,6 @@
 #include <QTime>
 #include <QTimer>
 #include <QDebug>
-#include <QtAV>
-#include <QtAVWidgets>
-#include <QtAV/AVPlayer.h>
 #include <math.h>
 #include <QInputDialog>
 #include <QGraphicsView>
@@ -19,47 +16,39 @@
 #if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
 #include <QStandardPaths>
 #endif
-using namespace QtAV;
-
-QString filename="",STimeET="";
-QMenu *popmenu;
-QAction *PMAFullscreen,*PMACapture;
-int volume=100,cn=0,cnn=0;
-float sr=1;
-QLabel *labelTL;
-AVPlayer *player;
-GraphicsItemRenderer *videoItem;
-QDesktopWidget *desktop;
-QPoint posw;
-bool m_bPressed;
-QPoint m_point;
-QImage imagec[16];
-bool isListShow;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);    
+    ui->setupUi(this);
+    ui->controlPanel->hide();
+    ui->sliderProgress->hide();
+    ui->statusBar->hide();
+    qApp->installEventFilter(this);
+    CP=new ControlPanel(this);
+    CP->move(0,height()-CP->height());
+    CP->resize(width()-ui->tableWidget->width(),CP->height());
+    sr=1;
     QActionGroup *scaleGroup = new QActionGroup(this);
     scaleGroup->addAction(ui->action_scale0_5);
     scaleGroup->addAction(ui->action_scale1);
     scaleGroup->addAction(ui->action_scale1_5);
     scaleGroup->addAction(ui->action_scale2);
 
-    ui->btnSkipB->setIcon(style()->standardIcon(QStyle::SP_MediaSkipBackward));
-    ui->btnSeekB->setIcon(style()->standardIcon(QStyle::SP_MediaSeekBackward));
-    ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-    ui->btnSkipF->setIcon(style()->standardIcon(QStyle::SP_MediaSkipForward));
-    ui->btnSeekF->setIcon(style()->standardIcon(QStyle::SP_MediaSeekForward));
-    ui->btnStop->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
-    ui->btnMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));    
+    ui->pushButtonSkipB->setIcon(style()->standardIcon(QStyle::SP_MediaSkipBackward));
+    ui->pushButtonSeekB->setIcon(style()->standardIcon(QStyle::SP_MediaSeekBackward));
+    ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    ui->pushButtonSkipF->setIcon(style()->standardIcon(QStyle::SP_MediaSkipForward));
+    ui->pushButtonSeekF->setIcon(style()->standardIcon(QStyle::SP_MediaSeekForward));
+    ui->pushButtonStop->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+    ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
     connect(new QShortcut(QKeySequence(Qt::Key_Escape),this), SIGNAL(activated()),this, SLOT(exitFullscreen()));
     connect(new QShortcut(QKeySequence(Qt::Key_Return),this), SIGNAL(activated()),this, SLOT(EEFullscreen()));
     connect(new QShortcut(QKeySequence(Qt::Key_Enter),this), SIGNAL(activated()),this, SLOT(EEFullscreen()));
     connect(new QShortcut(QKeySequence(Qt::Key_Space),this), SIGNAL(activated()),this, SLOT(playPause()));
-    connect(new QShortcut(QKeySequence(Qt::Key_Left),this), SIGNAL(activated()),this, SLOT(on_btnSeekB_clicked()));
-    connect(new QShortcut(QKeySequence(Qt::Key_Right),this), SIGNAL(activated()),this, SLOT(on_btnSeekF_clicked()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Left),this), SIGNAL(activated()),this, SLOT(on_pushButtonSeekB_clicked()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Right),this), SIGNAL(activated()),this, SLOT(on_pushButtonSeekF_clicked()));
     connect(new QShortcut(QKeySequence(Qt::Key_Up),this), SIGNAL(activated()),this, SLOT(on_action_volumeUp_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_Down),this), SIGNAL(activated()),this, SLOT(on_action_volumeDown_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_M),this), SIGNAL(activated()),this, SLOT(on_action_volumeMute_triggered()));
@@ -71,12 +60,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(new QShortcut(QKeySequence(Qt::Key_3),this), SIGNAL(activated()),this, SLOT(on_action_scale1_5_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_4),this), SIGNAL(activated()),this, SLOT(on_action_scale0_5_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_5),this), SIGNAL(activated()),this, SLOT(fitDesktop()));
+    connect(CP->ui->pushButtonSkipB,SIGNAL(pressed()),this,SLOT(on_pushButtonSkipB_clicked()));
+    connect(CP->ui->pushButtonSeekB,SIGNAL(pressed()),this,SLOT(on_pushButtonSeekB_clicked()));
+    connect(CP->ui->pushButtonPlay,SIGNAL(pressed()),this,SLOT(on_pushButtonPlay_clicked()));
+    connect(CP->ui->pushButtonStop,SIGNAL(pressed()),this,SLOT(on_pushButtonStop_clicked()));
+    connect(CP->ui->pushButtonSeekF,SIGNAL(pressed()),this,SLOT(on_pushButtonSeekF_clicked()));
+    connect(CP->ui->pushButtonSkipF,SIGNAL(pressed()),this,SLOT(on_pushButtonSkipF_clicked()));
+    connect(CP->ui->pushButtonMute,SIGNAL(pressed()),this,SLOT(on_pushButtonMute_clicked()));
+    connect(CP->ui->pushButtonFullscreen,SIGNAL(pressed()),this,SLOT(EEFullscreen()));
+    connect(CP->ui->pushButtonList,SIGNAL(pressed()),this,SLOT(on_pushButtonList_clicked()));
 
-    //QtAV::Widgets::registerRenderers();
-    player=new AVPlayer(this);
-    //video=new VideoOutput(this);
+    player=new AVPlayer(this);    
     videoItem = new GraphicsItemRenderer;
-
     //videoItem->resizeRenderer(800,600);
     QGraphicsScene *scene = new QGraphicsScene(this);
     scene->addItem(videoItem);
@@ -94,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     desktop = QApplication::desktop();
     move((desktop->width() - width())/2, (desktop->height() - height())/2);
+
     connect(ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));
     //connect(ui->sliderProgress,SIGNAL(sliderReleased()),this,SLOT(setMPPosition()));
     connect(ui->sliderProgress,SIGNAL(valueChanged(int)),this,SLOT(setSTime(int)));
@@ -134,7 +130,8 @@ void MainWindow::on_action_open_triggered()
 void MainWindow::open(QString path)
 {
     player->play(path);
-    ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     ui->statusBar->showMessage("打开 " + path);
     setWindowTitle(QFileInfo(path).fileName());
     ui->tableWidget->hide();
@@ -148,13 +145,14 @@ void MainWindow::on_action_openURL_triggered()
         if(!surl.isEmpty()){
             player->play(surl);
             ui->statusBar->showMessage("打开 "+surl);
-            ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+            ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+            CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
             setWindowTitle(QFileInfo(surl).fileName());
         }
     }
 }
 
-void MainWindow::on_btnList_clicked()
+void MainWindow::on_pushButtonList_clicked()
 {
     showHideList();
 }
@@ -307,6 +305,7 @@ void MainWindow::on_action_volumeUp_triggered()
         vol+=0.01;
         player->audio()->setVolume(vol);
         ui->sliderVolume->setValue(vol*100);
+        CP->ui->sliderVolume->setValue(vol*100);
         qDebug() << vol;
     }else{
         labelTL->show();
@@ -319,6 +318,7 @@ void MainWindow::on_action_volumeDown_triggered()
     qreal vol=player->audio()->volume()-0.01;
     player->audio()->setVolume(vol);
     ui->sliderVolume->setValue(vol*100);
+    CP->ui->sliderVolume->setValue(vol*100);
     qDebug() << vol;
     if(vol<0){
         labelTL->show();
@@ -331,8 +331,10 @@ void MainWindow::on_action_volumeMute_triggered()
     if(player->audio()->isMute()){
         player->audio()->setMute(false);
         ui->sliderVolume->setValue(volume);
+        CP->ui->sliderVolume->setValue(volume);
         //ui->btnVolume->setIcon(QIcon("volume-high.png"));
-        ui->btnMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
+        ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
+        CP->ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
         labelTL->setText("音量："+QString::number(volume));
         labelTL->show();
         QTimer::singleShot(3000,this,SLOT(timeoutTL()));
@@ -340,8 +342,10 @@ void MainWindow::on_action_volumeMute_triggered()
         volume=player->audio()->volume()*100;
         player->audio()->setMute(true);
         ui->sliderVolume->setValue(0);
+        CP->ui->sliderVolume->setValue(0);
         //ui->btnVolume->setIcon(QIcon("volume-muted.png"));
-        ui->btnMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolumeMuted));
+        ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolumeMuted));
+        CP->ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolumeMuted));
         labelTL->setText("静音");
         labelTL->show();
         QTimer::singleShot(3000,this,SLOT(timeoutTL()));
@@ -355,7 +359,7 @@ void MainWindow::on_action_help_triggered(){
 
 void MainWindow::on_action_changelog_triggered()
 {
-    QMessageBox aboutMB(QMessageBox::NoIcon, "更新历史", "1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0\n2017-02\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。");
+    QMessageBox aboutMB(QMessageBox::NoIcon, "更新历史", "1.4 (2017-07)\n设计新的浮动透明控制栏。\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0\n2017-02\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。");
     aboutMB.exec();
 }
 
@@ -366,23 +370,24 @@ void MainWindow::on_action_aboutQtAV_triggered()
 
 void MainWindow::on_action_about_triggered()
 {
-    QMessageBox aboutMB(QMessageBox::NoIcon, "关于", "海天鹰媒体播放器 1.3\n一款基于Qt和QtAV库的媒体播放器。\n作者：黄颖\nE-mail: sonichy@163.com\n主页：sonichy.96.lt\n参考：\nhttps://github.com/wang-bin/QtAV");
+    QMessageBox aboutMB(QMessageBox::NoIcon, "关于", "海天鹰媒体播放器 1.4\n一款基于Qt和QtAV库的媒体播放器。\n作者：黄颖\nE-mail: sonichy@163.com\n主页：sonichy.96.lt\n参考：\nhttps://github.com/wang-bin/QtAV");
     aboutMB.setIconPixmap(QPixmap(":/icon.png"));
     aboutMB.exec();
 }
 
-void MainWindow::on_btnPlay_clicked()
+void MainWindow::on_pushButtonPlay_clicked()
 {
     playPause();
 }
 
-void MainWindow::on_btnStop_clicked()
+void MainWindow::on_pushButtonStop_clicked()
 {
     player->stop();
-    ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
 }
 
-void MainWindow::on_btnSeekB_clicked()
+void MainWindow::on_pushButtonSeekB_clicked()
 {
     player->seekBackward();
     QTime t(0,0,0);
@@ -398,7 +403,7 @@ void MainWindow::on_btnSeekB_clicked()
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
-void MainWindow::on_btnSeekF_clicked()
+void MainWindow::on_pushButtonSeekF_clicked()
 {
     player->seekForward();
     QTime t(0,0,0);
@@ -414,7 +419,7 @@ void MainWindow::on_btnSeekF_clicked()
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
-void MainWindow::on_btnSkipB_clicked()
+void MainWindow::on_pushButtonSkipB_clicked()
 {
     if(ui->tableWidget->currentRow()>0){
         ui->tableWidget->setCurrentCell(ui->tableWidget->currentRow()-1,0);
@@ -422,7 +427,7 @@ void MainWindow::on_btnSkipB_clicked()
     }
 }
 
-void MainWindow::on_btnSkipF_clicked()
+void MainWindow::on_pushButtonSkipF_clicked()
 {
     if(ui->tableWidget->currentRow()<ui->tableWidget->rowCount()-1){
         ui->tableWidget->setCurrentCell(ui->tableWidget->currentRow()+1,0);
@@ -430,52 +435,53 @@ void MainWindow::on_btnSkipF_clicked()
     }
 }
 
-void MainWindow::on_btnMute_clicked()
+void MainWindow::on_pushButtonMute_clicked()
 {
     on_action_volumeMute_triggered();
 }
 
-void MainWindow::on_btnFullscreen_clicked(){
+void MainWindow::on_pushButtonFullscreen_clicked(){
     EEFullscreen();
 }
 
 void MainWindow::enterFullscreen(){
     isListShow=ui->tableWidget->isVisible();
-    if(!isFullScreen()){
-        posw=pos();
-        showFullScreen();
-        ui->menuBar->hide();
-        ui->controlPanel->hide();
-        //ui->controlPanel->setWindowOpacity(0.1);
-        ui->statusBar->hide();
-        videoItem->resizeRenderer(desktop->width(),desktop->height());
-        ui->sliderProgress->setStyleSheet("background:black;");        
-        ui->sliderProgress->hide();
-        PMAFullscreen->setText("退出全屏");
-        ui->tableWidget->setVisible(false);
-    }
+    posw=pos();
+    showFullScreen();
+    ui->menuBar->hide();
+    //ui->controlPanel->hide();
+    //ui->controlPanel->setWindowOpacity(0.1);
+    //ui->sliderProgress->setStyleSheet("background:black;");
+    //ui->sliderProgress->hide();
+    //ui->statusBar->hide();
+    videoItem->resizeRenderer(desktop->width(),desktop->height());
+    PMAFullscreen->setText("退出全屏");
+    ui->tableWidget->setVisible(false);
+    CP->move(0,desktop->height()-CP->height());
+    CP->resize(desktop->width(),CP->height());
 }
 
 void MainWindow::exitFullscreen(){
-    if(isFullScreen()){
-        showNormal();
-        ui->menuBar->show();
-        ui->controlPanel->show();
-        ui->statusBar->show();
-        ui->sliderProgress->setStyleSheet("");
-        videoItem->resizeRenderer(player->statistics().video_only.width*sr, player->statistics().video_only.height*sr);
-        ui->sliderProgress->show();
-        ui->tableWidget->setVisible(isListShow);
-        int tww;
-        if(ui->tableWidget->isVisible()){
-            tww=ui->tableWidget->width();
-        }else{
-            tww=0;
-        }
-        resize(player->statistics().video_only.width*sr + tww, player->statistics().video_only.height*sr + ui->menuBar->height() + ui->controlPanel->height() + ui->statusBar->height());
-        move(posw);
-        PMAFullscreen->setText("全屏");
+    showNormal();
+    ui->menuBar->show();
+    //ui->controlPanel->show();
+    //ui->statusBar->show();
+    //ui->sliderProgress->setStyleSheet("");
+    videoItem->resizeRenderer(player->statistics().video_only.width*sr, player->statistics().video_only.height*sr);
+    //ui->sliderProgress->show();
+    ui->tableWidget->setVisible(isListShow);
+    int tww;
+    if(ui->tableWidget->isVisible()){
+        tww=ui->tableWidget->width();
+    }else{
+        tww=0;
     }
+    resize(player->statistics().video_only.width*sr + tww, player->statistics().video_only.height*sr + ui->menuBar->height());
+    move(posw);
+    PMAFullscreen->setText("全屏");
+    CP->move(0,height()-CP->height());
+    CP->resize(width()-tww,CP->height());
+
 }
 
 void MainWindow::EEFullscreen(){    
@@ -488,6 +494,7 @@ void MainWindow::EEFullscreen(){
 
 void MainWindow::durationChange(){
     ui->sliderProgress->setRange(0,player->duration());
+    CP->ui->sliderProgress->setRange(0,player->duration());
     qDebug() << player->statistics().video_only.width << "X" << player->statistics().video_only.height;
     videoItem->resizeRenderer(player->statistics().video_only.width,player->statistics().video_only.height);
     int tww;
@@ -496,13 +503,17 @@ void MainWindow::durationChange(){
     }else{
         tww=0;
     }
-    resize(player->statistics().video_only.width + tww , player->statistics().video_only.height + ui->menuBar->height() + ui->controlPanel->height() + ui->statusBar->height());
+    resize(player->statistics().video_only.width + tww , player->statistics().video_only.height + ui->menuBar->height());
     move((desktop->width() - width())/2, (desktop->height() - height())/2);
+    CP->move(0,height()-CP->height());
+    CP->resize(ui->graphicsView->width(),CP->height());
 }
 
 void MainWindow::positionChange(qint64 p){
     ui->sliderProgress->setValue(p);
     ui->sliderProgress->setToolTip(STimeET);
+    CP->ui->sliderProgress->setValue(p);
+    CP->ui->sliderProgress->setToolTip(STimeET);
 }
 
 void MainWindow::setSTime(int v){
@@ -514,10 +525,16 @@ void MainWindow::setSTime(int v){
     QString STimeTotal=t.toString("hh:mm:ss");
     STimeET=STimeElapse+"/"+STimeTotal;
     ui->labelTimeVideo->setText(STimeET);
+    CP->ui->labelTimeVideo->setText(STimeET);
 }
 
 void MainWindow::timeoutTL(){
     labelTL->hide();
+}
+
+void MainWindow::hideCP(){
+    CP->hide();
+    if(isFullScreen())setCursor(QCursor(Qt::BlankCursor));
 }
 
 void MainWindow::volumeChange(qreal v){
@@ -533,17 +550,23 @@ void MainWindow::playPause(){
     if(player->state()==player->PlayingState){
           player->pause(true);
         //ui->btnPlay->setIcon(QIcon("play.png"));
-        ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        ui->btnPlay->setToolTip("播放");
+        ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        ui->pushButtonPlay->setToolTip("播放");
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        CP->ui->pushButtonPlay->setToolTip("播放");
     }else if(player->state()==player->PausedState){
         player->pause(false);
         //ui->btnPlay->setIcon(QIcon("pause.png"));
-        ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        ui->btnPlay->setToolTip("暂停");
+        ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        ui->pushButtonPlay->setToolTip("暂停");
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        CP->ui->pushButtonPlay->setToolTip("暂停");
     }else if(player->state()==player->StoppedState){
         player->play();
-        ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        ui->btnPlay->setToolTip("暂停");
+        ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        ui->pushButtonPlay->setToolTip("暂停");
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        CP->ui->pushButtonPlay->setToolTip("暂停");
     }
 }
 
@@ -587,8 +610,6 @@ void MainWindow::closeEvent(QCloseEvent *e){
     //if(player)player->stop();
     //qApp->quit();
 }
-
-
 
 void MainWindow::scale(float s){
     videoItem->resizeRenderer(player->statistics().video_only.width*s, player->statistics().video_only.height*s);
@@ -640,7 +661,8 @@ void MainWindow::playTV(int row,int column){
         player->play(surl);
         setWindowTitle(ui->tableWidget->item(row,0)->text());
         ui->statusBar->showMessage("直播 "+surl);
-        ui->btnPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     }
 }
 
@@ -659,7 +681,7 @@ void MainWindow::fillTable(QString filename){
                 ui->tableWidget->setItem(i,0,new QTableWidgetItem(strlist.at(0)));
                 ui->tableWidget->setItem(i,1,new QTableWidgetItem(strlist.at(1).split("#").at(0)));
             }else{
-                ui->tableWidget->setItem(i,0,new QTableWidgetItem(line.at(i)));
+                ui->tableWidget->setItem(i,0,new QTableWidgetItem("【"+line.at(i)+"】"));
                 ui->tableWidget->setItem(i,1,new QTableWidgetItem(""));
             }
         }
@@ -675,12 +697,19 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         m_bPressed = true;
         m_point = event->pos();
     }
+    CP->show();
+    setCursor(QCursor(Qt::ArrowCursor));
+    QTimer::singleShot(5000,this,SLOT(hideCP()));
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    if (m_bPressed)
+    if (m_bPressed){
         move(event->pos() - m_point + pos());
+    }
+    CP->show();
+    setCursor(QCursor(Qt::ArrowCursor));
+    QTimer::singleShot(5000,this,SLOT(hideCP()));
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
@@ -724,4 +753,15 @@ void MainWindow::saveImage(QImage image){
     }
 }
 
-
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+  if(event->type() == QEvent::MouseMove){
+    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+    //statusBar()->showMessage(QString("Mouse (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
+    qDebug() << "(" << mouseEvent->pos().x() << mouseEvent->pos().y() << ")";
+    CP->show();
+    setCursor(QCursor(Qt::ArrowCursor));
+    QTimer::singleShot(5000,this,SLOT(hideCP()));
+  }
+  return false;
+}

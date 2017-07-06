@@ -131,7 +131,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="btnSkipB">
+          <widget class="QPushButton" name="pushButtonSkipB">
            <property name="toolTip">
             <string>上一个</string>
            </property>
@@ -150,7 +150,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnSeekB">
+          <widget class="QPushButton" name="pushButtonSeekB">
            <property name="toolTip">
             <string>快退</string>
            </property>
@@ -169,7 +169,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnPlay">
+          <widget class="QPushButton" name="pushButtonPlay">
            <property name="toolTip">
             <string>播放/暂停</string>
            </property>
@@ -188,7 +188,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnSeekF">
+          <widget class="QPushButton" name="pushButtonSeekF">
            <property name="toolTip">
             <string>快进</string>
            </property>
@@ -207,7 +207,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnSkipF">
+          <widget class="QPushButton" name="pushButtonSkipF">
            <property name="toolTip">
             <string>下一个</string>
            </property>
@@ -226,7 +226,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnStop">
+          <widget class="QPushButton" name="pushButtonStop">
            <property name="toolTip">
             <string>停止</string>
            </property>
@@ -245,7 +245,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnMute">
+          <widget class="QPushButton" name="pushButtonMute">
            <property name="toolTip">
             <string>静音</string>
            </property>
@@ -299,7 +299,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="btnFullscreen">
+          <widget class="QPushButton" name="pushButtonFullscreen">
            <property name="styleSheet">
             <string notr="true">border:none</string>
            </property>
@@ -319,7 +319,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnList">
+          <widget class="QPushButton" name="pushButtonList">
            <property name="maximumSize">
             <size>
              <width>25</width>
