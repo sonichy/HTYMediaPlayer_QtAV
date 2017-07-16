@@ -16,6 +16,7 @@
 #if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
 #include <QStandardPaths>
 #endif
+#include <QTextBrowser>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -25,6 +26,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->controlPanel->hide();
     ui->sliderProgress->hide();
     ui->statusBar->hide();
+    QPalette pal(palette());
+    pal.setColor(QPalette::Background, Qt::black);
+    setPalette(pal);
+
     qApp->installEventFilter(this);
     CP=new ControlPanel(this);
     CP->move(0,height()-CP->height());
@@ -301,7 +306,7 @@ void MainWindow::on_action_rotateCCW_triggered(){
 void MainWindow::on_action_volumeUp_triggered()
 {
     qreal vol=player->audio()->volume();
-    if(vol<1){
+    if(vol<2){
         vol+=0.01;
         player->audio()->setVolume(vol);
         ui->sliderVolume->setValue(vol*100);
@@ -359,8 +364,27 @@ void MainWindow::on_action_help_triggered(){
 
 void MainWindow::on_action_changelog_triggered()
 {
-    QMessageBox aboutMB(QMessageBox::NoIcon, "更新历史", "1.4 (2017-07)\n设计新的浮动透明控制栏。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0\n2017-02\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。");
-    aboutMB.exec();
+    QString s="1.4 (2017-07)\n更新日志太长，消息框改成带滚动条的文本框。\n设计新的浮动透明控制栏，延时自动隐藏，鼠标移动显示。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0 (2017-02)\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。";
+    QDialog *dialog=new QDialog;
+    dialog->setWindowTitle("更新历史");
+    dialog->setFixedSize(400,300);
+    QVBoxLayout *vbox=new QVBoxLayout;
+    QTextBrowser *textBrowser=new QTextBrowser;
+    textBrowser->setText(s);
+    textBrowser->zoomIn();
+    vbox->addWidget(textBrowser);
+    QHBoxLayout *hbox=new QHBoxLayout;
+    QPushButton *btnConfirm=new QPushButton("确定");
+    hbox->addStretch();
+    hbox->addWidget(btnConfirm);
+    hbox->addStretch();
+    vbox->addLayout(hbox);
+    dialog->setLayout(vbox);
+    dialog->show();
+    connect(btnConfirm, SIGNAL(clicked()), dialog, SLOT(accept()));
+    if(dialog->exec()==QDialog::Accepted){
+        dialog->close();
+    }
 }
 
 void MainWindow::on_action_aboutQtAV_triggered()
@@ -444,8 +468,7 @@ void MainWindow::on_pushButtonFullscreen_clicked(){
     EEFullscreen();
 }
 
-void MainWindow::enterFullscreen(){
-    setStyleSheet("background:black;");
+void MainWindow::enterFullscreen(){    
     isListShow=ui->tableWidget->isVisible();
     posw=pos();
     showFullScreen();
@@ -463,7 +486,7 @@ void MainWindow::enterFullscreen(){
 }
 
 void MainWindow::exitFullscreen(){
-    setStyleSheet("");
+    //setStyleSheet("");
     showNormal();
     ui->menuBar->show();
     //ui->controlPanel->show();

@@ -20,6 +20,9 @@
    <iconset resource="filelist.qrc">
     <normaloff>:/icon.png</normaloff>:/icon.png</iconset>
   </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="6,1">
     <property name="spacing">
@@ -87,7 +90,7 @@
         </property>
         <layout class="QHBoxLayout" name="control">
          <property name="spacing">
-          <number>5</number>
+          <number>0</number>
          </property>
          <property name="sizeConstraint">
           <enum>QLayout::SetMinimumSize</enum>
