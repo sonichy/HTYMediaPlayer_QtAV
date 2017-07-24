@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    m_bPressed = false;
     ui->setupUi(this);
     ui->controlPanel->hide();
     ui->sliderProgress->hide();
@@ -95,11 +96,14 @@ MainWindow::MainWindow(QWidget *parent) :
     desktop = QApplication::desktop();
     move((desktop->width() - width())/2, (desktop->height() - height())/2);
 
-    connect(ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));
+    //connect(ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));
+    connect(CP->ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));
     //connect(ui->sliderProgress,SIGNAL(sliderReleased()),this,SLOT(setMPPosition()));
-    connect(ui->sliderProgress,SIGNAL(valueChanged(int)),this,SLOT(setSTime(int)));
-    connect(ui->sliderVolume,SIGNAL(sliderMoved(int)),this,SLOT(setVolume(int)));
-    connect(ui->sliderVolume,SIGNAL(sliderPressed()),this,SLOT(setVolume()));
+    //connect(ui->sliderProgress,SIGNAL(valueChanged(int)),this,SLOT(setSTime(int)));
+    //connect(ui->sliderVolume,SIGNAL(sliderMoved(int)),this,SLOT(setVolume(int)));
+    connect(CP->ui->sliderVolume,SIGNAL(sliderMoved(int)),this,SLOT(setVolume(int)));
+    //connect(ui->sliderVolume,SIGNAL(sliderPressed()),this,SLOT(setVolume()));
+
     createPopmenu();
 
     ui->tableWidget->setColumnHidden(1,true);
@@ -414,14 +418,8 @@ void MainWindow::on_pushButtonStop_clicked()
 void MainWindow::on_pushButtonSeekB_clicked()
 {
     player->seekBackward();
-    QTime t(0,0,0);
-    t=t.addMSecs(ui->sliderProgress->value());
-    QString STimeElapse=t.toString("hh:mm");
-    t.setHMS(0,0,0);
-    t=t.addMSecs(player->duration());
-    QString STimeTotal=t.toString("hh:mm");
-    STimeET=STimeElapse+"/"+STimeTotal;
-    labelTL->setText(STimeET);
+    setSTime(player->position());
+    labelTL->setText(CP->ui->labelTimeVideo->text());
     labelTL->adjustSize();
     labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
@@ -430,14 +428,8 @@ void MainWindow::on_pushButtonSeekB_clicked()
 void MainWindow::on_pushButtonSeekF_clicked()
 {
     player->seekForward();
-    QTime t(0,0,0);
-    t=t.addMSecs(ui->sliderProgress->value());
-    QString STimeElapse=t.toString("hh:mm");
-    t.setHMS(0,0,0);
-    t=t.addMSecs(player->duration());
-    QString STimeTotal=t.toString("hh:mm");
-    STimeET=STimeElapse+"/"+STimeTotal;
-    labelTL->setText(STimeET);
+    setSTime(player->position());
+    labelTL->setText(CP->ui->labelTimeVideo->text());
     labelTL->adjustSize();
     labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
@@ -518,7 +510,7 @@ void MainWindow::EEFullscreen(){
 }
 
 void MainWindow::durationChange(){
-    ui->sliderProgress->setRange(0,player->duration());
+    //ui->sliderProgress->setRange(0,player->duration());
     CP->ui->sliderProgress->setRange(0,player->duration());
     qDebug() << player->statistics().video_only.width << "X" << player->statistics().video_only.height;
     videoItem->resizeRenderer(player->statistics().video_only.width,player->statistics().video_only.height);
@@ -535,10 +527,11 @@ void MainWindow::durationChange(){
 }
 
 void MainWindow::positionChange(qint64 p){
-    ui->sliderProgress->setValue(p);
-    ui->sliderProgress->setToolTip(STimeET);
+    //ui->sliderProgress->setValue(p);
+    //ui->sliderProgress->setToolTip(STimeET);
     CP->ui->sliderProgress->setValue(p);
     CP->ui->sliderProgress->setToolTip(STimeET);
+    setSTime(p);
 }
 
 void MainWindow::setSTime(int v){
@@ -549,8 +542,8 @@ void MainWindow::setSTime(int v){
     t=t.addMSecs(player->duration());
     QString STimeTotal=t.toString("hh:mm:ss");
     STimeET=STimeElapse+"/"+STimeTotal;
-    ui->labelTimeVideo->setText(STimeET);
-    CP->ui->labelTimeVideo->setText(STimeET);
+    //ui->labelTimeVideo->setText(STimeET);
+    CP->ui->labelTimeVideo->setText(STimeET);    
 }
 
 void MainWindow::timeoutTL(){
@@ -613,6 +606,11 @@ void MainWindow::contextMenuEvent(QContextMenuEvent *event){
 
 void MainWindow::setMPPosition(int v){
     player->setPosition(v);
+    setSTime(v);
+    labelTL->setText(CP->ui->labelTimeVideo->text());
+    labelTL->adjustSize();
+    labelTL->show();
+    QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
 void MainWindow::setMPPosition(){
@@ -736,9 +734,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     if (m_bPressed){
         move(event->pos() - m_point + pos());
     }
-    CP->show();
-    setCursor(QCursor(Qt::ArrowCursor));
-    QTimer::singleShot(5000,this,SLOT(hideCP()));
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event)
@@ -787,7 +782,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
   if(event->type() == QEvent::MouseMove){
     QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
     //statusBar()->showMessage(QString("Mouse (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
-    qDebug() << "(" << mouseEvent->pos().x() << mouseEvent->pos().y() << ")";
+    //qDebug() << "(" << mouseEvent->pos().x() << mouseEvent->pos().y() << ")";
     CP->show();
     setCursor(QCursor(Qt::ArrowCursor));
     QTimer::singleShot(5000,this,SLOT(hideCP()));

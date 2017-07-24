@@ -49,6 +49,7 @@ private:
     void open(QString path);
     ControlPanel *CP;
     bool eventFilter(QObject *obj, QEvent *event);
+    void setSTime(int v);
 
 private slots:
     void on_action_open_triggered();
@@ -96,7 +97,6 @@ private slots:
     void fitDesktop();
     void playPause();    
     void contextMenuEvent(QContextMenuEvent *event);
-    void setSTime(int v);
     void timeoutTL();
     void hideCP();
     void timeoutMouseMove();
