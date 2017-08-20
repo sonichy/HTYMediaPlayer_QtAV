@@ -13,6 +13,9 @@
   <property name="mouseTracking">
    <bool>true</bool>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>海天鹰播放器</string>
   </property>
@@ -47,6 +50,9 @@
         <property name="mouseTracking">
          <bool>true</bool>
         </property>
+        <property name="acceptDrops">
+         <bool>true</bool>
+        </property>
         <property name="styleSheet">
          <string notr="true">border:none;background:black;</string>
         </property>
@@ -61,6 +67,9 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+        </property>
+        <property name="dragMode">
+         <enum>QGraphicsView::NoDrag</enum>
         </property>
        </widget>
       </item>

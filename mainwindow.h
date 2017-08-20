@@ -41,15 +41,17 @@ private:
     QImage imagec[16];
     bool isListShow;
     void createPopmenu();
-    void closeEvent(QCloseEvent *e);
-    void mouseDoubleClickEvent(QMouseEvent* event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void open(QString path);
+    void closeEvent(QCloseEvent*);
+    void mouseDoubleClickEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+    void open(QString);
     ControlPanel *CP;
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject*, QEvent*);
     void setSTime(int v);
+    void dragEnterEvent(QDragEnterEvent*);
+    void dropEvent(QDropEvent*);
 
 private slots:
     void on_action_open_triggered();
