@@ -56,7 +56,7 @@
      <item>
       <widget class="QLabel" name="labelTimeVideo">
        <property name="toolTip">
-        <string>时间</string>
+        <string/>
        </property>
        <property name="styleSheet">
         <string notr="true">color: rgb(255, 255, 255);</string>

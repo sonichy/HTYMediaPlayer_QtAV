@@ -560,7 +560,7 @@ void MainWindow::hideCP(){
 void MainWindow::volumeChange(qreal v){
     //ui->sliderVolume->setValue(v*100);
     //ui->sliderVolume->setToolTip(QString::number(ui->sliderVolume->value()));
-    CP->ui->sliderVolume->setToolTip(QString::number(v*100));
+    CP->ui->sliderVolume->setToolTip(QString::number(floor(v*100)));
     labelTL->setText("音量："+QString::number(floor(v*100)));
     labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
