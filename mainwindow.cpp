@@ -77,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(CP->ui->pushButtonFullscreen,SIGNAL(pressed()),this,SLOT(EEFullscreen()));
     connect(CP->ui->pushButtonList,SIGNAL(pressed()),this,SLOT(on_pushButtonList_clicked()));
 
-    player=new AVPlayer(this);    
+    player=new AVPlayer(this);
     videoItem = new GraphicsItemRenderer;
     //videoItem->resizeRenderer(800,600);
     QGraphicsScene *scene = new QGraphicsScene(this);
@@ -133,7 +133,7 @@ void MainWindow::on_action_open_triggered()
         filename = QFileDialog::getOpenFileName(this, "打开媒体文件", filename);
     }
     if(!filename.isEmpty()){
-       open(filename);
+        open(filename);
     }
 }
 
@@ -190,14 +190,14 @@ void MainWindow::on_action_liveImport_triggered(){
         filename = QFileDialog::getOpenFileName(this, "打开文本", filename, "文本文件(*.txt)");
     }
     if(!filename.isEmpty()){
-       fillTable(filename);
+        fillTable(filename);
     }
 }
 
 void MainWindow::on_action_quit_triggered()
 {
     player->stop();
-    qApp->quit();    
+    qApp->quit();
 }
 
 void MainWindow::on_action_fullscreen_triggered(){
@@ -254,7 +254,7 @@ void MainWindow::on_action_capture16_triggered(){
     imageDS.fill(Qt::white);
     int k=0;
     QPainter painter(&imageDS);
-    painter.drawPixmap(20,10,QPixmap("icon.png").scaled(60,60));    
+    painter.drawPixmap(20,10,QPixmap("icon.png").scaled(60,60));
     painter.drawText(300,30,"文件名称：" + QFileInfo(filename).fileName());
     painter.drawText(300,60,"文件大小：" + SB(QFileInfo(filename).size()));
     painter.drawText(500,60,"视频尺寸：" + QString::number(player->statistics().video_only.width) + " X " + QString::number(player->statistics().video_only.height));
@@ -544,7 +544,8 @@ void MainWindow::setSTime(int v){
     QString STimeTotal=t.toString("hh:mm:ss");
     STimeET=STimeElapse+"/"+STimeTotal;
     //ui->labelTimeVideo->setText(STimeET);
-    CP->ui->labelTimeVideo->setText(STimeET);    
+    CP->ui->labelTimeVideo->setText(STimeET);
+    CP->ui->sliderProgress->setToolTip(STimeElapse);
 }
 
 void MainWindow::timeoutTL(){
@@ -558,7 +559,8 @@ void MainWindow::hideCP(){
 
 void MainWindow::volumeChange(qreal v){
     //ui->sliderVolume->setValue(v*100);
-    ui->sliderVolume->setToolTip(QString::number(ui->sliderVolume->value()));
+    //ui->sliderVolume->setToolTip(QString::number(ui->sliderVolume->value()));
+    CP->ui->sliderVolume->setToolTip(QString::number(v*100));
     labelTL->setText("音量："+QString::number(floor(v*100)));
     labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
@@ -567,7 +569,7 @@ void MainWindow::volumeChange(qreal v){
 void MainWindow::playPause(){    
     //qDebug() << "state=" << player->state();
     if(player->state()==player->PlayingState){
-          player->pause(true);
+        player->pause(true);
         //ui->btnPlay->setIcon(QIcon("play.png"));
         ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         ui->pushButtonPlay->setToolTip("播放");
@@ -631,6 +633,7 @@ void MainWindow::timeoutMouseMove(){
 }
 
 void MainWindow::closeEvent(QCloseEvent *e){
+    Q_UNUSED(e);
     //if(player)player->stop();
     //qApp->quit();
 }
@@ -639,7 +642,7 @@ void MainWindow::scale(float s){
     qDebug() << ui->graphicsView->size();
     videoItem->resizeRenderer(player->statistics().video_only.width*s, player->statistics().video_only.height*s);
     if(isFullScreen()){
-        //ui->graphicsView->setAlignment(Qt::AlignCenter);        
+        //ui->graphicsView->setAlignment(Qt::AlignCenter);
         ui->graphicsView->move((desktop->width()-player->statistics().video_only.width*s)/2,(desktop->height()-player->statistics().video_only.height*s)/2);
     }else{
         resize(player->statistics().video_only.width*s ,player->statistics().video_only.height*s + ui->menuBar->height());
@@ -674,6 +677,7 @@ void MainWindow::on_action_scale2_triggered(){
 
 void MainWindow::mouseDoubleClickEvent(QMouseEvent* event)
 {
+    Q_UNUSED(event);
     if(player){
         EEFullscreen();
     }
@@ -684,14 +688,16 @@ void MainWindow::fitDesktop(){
 }
 
 void MainWindow::playTV(int row,int column){
+    Q_UNUSED(column);
     QString surl=ui->tableWidget->item(row,1)->text();
-    if(surl!=""){
-        player->play(surl);
-        setWindowTitle(ui->tableWidget->item(row,0)->text());
-        ui->statusBar->showMessage("直播 "+surl);
-        ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-    }
+    qDebug() << "play(" << surl << ")";
+    //if(surl!=""){
+    player->play(surl);
+    setWindowTitle(ui->tableWidget->item(row,0)->text());
+    ui->statusBar->showMessage("直播 "+surl);
+    ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    //}
 }
 
 void MainWindow::fillTable(QString filename){
@@ -780,22 +786,24 @@ void MainWindow::saveImage(QImage image){
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
-  if(event->type() == QEvent::MouseMove){
-    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-    //statusBar()->showMessage(QString("Mouse (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
-    //qDebug() << "(" << mouseEvent->pos().x() << mouseEvent->pos().y() << ")";
-    CP->show();
-    setCursor(QCursor(Qt::ArrowCursor));
-    QTimer::singleShot(5000,this,SLOT(hideCP()));
-  }
-  return false;
+    Q_UNUSED(obj);
+    if(event->type() == QEvent::MouseMove){
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        Q_UNUSED(mouseEvent);
+        //statusBar()->showMessage(QString("Mouse (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
+        //qDebug() << "(" << mouseEvent->pos().x() << mouseEvent->pos().y() << ")";
+        CP->show();
+        setCursor(QCursor(Qt::ArrowCursor));
+        QTimer::singleShot(5000,this,SLOT(hideCP()));
+    }
+    return false;
 }
 
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *e)
 {
     //if(e->mimeData()->hasFormat("text/uri-list")) //只能打开文本文件
-        e->acceptProposedAction(); //可以在这个窗口部件上拖放对象
+    e->acceptProposedAction(); //可以在这个窗口部件上拖放对象
 }
 
 void MainWindow::dropEvent(QDropEvent *e) //释放对方时，执行的操作
