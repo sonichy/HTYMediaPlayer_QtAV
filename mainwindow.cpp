@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setPalette(pal);
 
     qApp->installEventFilter(this);
-    CP=new ControlPanel(this);
+    CP = new ControlPanel(this);
     CP->move(0,height()-CP->height());
     CP->resize(width()-ui->tableWidget->width(),CP->height());
     sr=1;
@@ -77,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(CP->ui->pushButtonFullscreen,SIGNAL(pressed()),this,SLOT(EEFullscreen()));
     connect(CP->ui->pushButtonList,SIGNAL(pressed()),this,SLOT(on_pushButtonList_clicked()));
 
-    player=new AVPlayer(this);
+    player = new AVPlayer(this);
     videoItem = new GraphicsItemRenderer;
     //videoItem->resizeRenderer(800,600);
     QGraphicsScene *scene = new QGraphicsScene(this);
@@ -118,6 +118,10 @@ MainWindow::MainWindow(QWidget *parent) :
     if(Largs.length()>1){
         open(Largs.at(1));
     }
+
+    dialogUrl = new DialogURL(this);
+    connect(dialogUrl->ui->pushButtonAnalyze,SIGNAL(pressed()),this,SLOT(analyze()));
+    connect(dialogUrl->ui->tableWidget,SIGNAL(cellClicked(int,int)),this,SLOT(playURL(int,int)));
 }
 
 MainWindow::~MainWindow()
@@ -149,17 +153,18 @@ void MainWindow::open(QString path)
 
 void MainWindow::on_action_openURL_triggered()
 {
-    bool isOK;
-    QString surl=QInputDialog::getText(this,"打开网络媒体","网址：", QLineEdit::Normal,"http://",&isOK);
-    if(isOK){
-        if(!surl.isEmpty()){
-            player->play(surl);
-            ui->statusBar->showMessage("打开 "+surl);
-            ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-            CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-            setWindowTitle(QFileInfo(surl).fileName());
-        }
-    }
+    dialogUrl->show();
+//    bool isOK;
+//    QString surl=QInputDialog::getText(this,"打开网络媒体","网址：", QLineEdit::Normal,"http://",&isOK);
+//    if(isOK){
+//        if(!surl.isEmpty()){
+//            player->play(surl);
+//            ui->statusBar->showMessage("打开 "+surl);
+//            ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+//            CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+//            setWindowTitle(QFileInfo(surl).fileName());
+//        }
+//    }
 }
 
 void MainWindow::on_pushButtonList_clicked()
@@ -823,4 +828,44 @@ void MainWindow::dropEvent(QDropEvent *e) //释放对方时，执行的操作
         return;
 
     open(fileName);
+}
+
+void MainWindow::analyze()
+{
+    QString surl=dialogUrl->ui->lineEdit->text();
+    if(!surl.isEmpty()){
+        if(surl.contains(".m3u8")){
+        player->play(surl);
+        ui->statusBar->showMessage("打开 "+surl);
+        setWindowTitle(QFileInfo(surl).fileName());
+        }
+        if(surl.contains(";")){
+            dialogUrl->ui->tableWidget->setRowCount(0);
+            QStringList clip = surl.split(";");
+            for(int i=0; i<clip.size(); i++){
+                dialogUrl->ui->tableWidget->insertRow(i);
+                dialogUrl->ui->tableWidget->setItem(i,0,new QTableWidgetItem(QFileInfo(clip.at(i)).fileName()));
+                dialogUrl->ui->tableWidget->setItem(i,1,new QTableWidgetItem(clip.at(i)));
+            }
+            dialogUrl->ui->tableWidget->resizeColumnsToContents();
+        }
+        ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    }
+}
+
+void MainWindow::playURL(int row,int column)
+{
+    Q_UNUSED(column);
+    ui->tableWidget->hide();
+    QString surl = dialogUrl->ui->tableWidget->item(row,1)->text();
+    qDebug() << "play(" << surl << ")";
+    //if(surl!=""){
+    player->play(surl);
+    dialogUrl->hide();
+    setWindowTitle(dialogUrl->ui->tableWidget->item(row,0)->text());
+    ui->statusBar->showMessage(surl);
+    ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    //}
 }

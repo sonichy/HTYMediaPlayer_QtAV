@@ -9,6 +9,8 @@
 #include <QDesktopWidget>
 #include "controlpanel.h"
 #include "ui_controlpanel.h"
+#include "dialogurl.h"
+#include "ui_dialogurl.h"
 
 using namespace QtAV;
 namespace Ui {
@@ -18,7 +20,6 @@ namespace Ui {
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -52,6 +53,7 @@ private:
     void setSTime(int v);
     void dragEnterEvent(QDragEnterEvent*);
     void dropEvent(QDropEvent*);
+    DialogURL *dialogUrl;
 
 private slots:
     void on_action_open_triggered();
@@ -87,8 +89,8 @@ private slots:
     void on_pushButtonFullscreen_clicked();
     void on_pushButtonList_clicked();
     void durationChange();
-    void positionChange(qint64 d);    
-    void volumeChange(qreal v);
+    void positionChange(qint64);
+    void volumeChange(qreal);
     void setMPPosition(int);
     void setMPPosition();
     void setVolume(int);
@@ -98,15 +100,17 @@ private slots:
     void EEFullscreen();
     void fitDesktop();
     void playPause();    
-    void contextMenuEvent(QContextMenuEvent *event);
+    void contextMenuEvent(QContextMenuEvent*);
     void timeoutTL();
     void hideCP();
     void timeoutMouseMove();
-    void saveImage(QImage image);
+    void saveImage(QImage);
     void scale(float s);
-    void playTV(int row, int column);
-    void fillTable(QString filename);
+    void playTV(int,int);
+    void fillTable(QString);
     void showHideList();
+    void analyze();
+    void playURL(int,int);
 };
 
 #endif // MAINWINDOW_H
