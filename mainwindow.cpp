@@ -863,7 +863,7 @@ void MainWindow::playURL(int row,int column)
     //if(surl!=""){
     player->play(surl);
     dialogUrl->hide();
-    setWindowTitle(dialogUrl->ui->tableWidget->item(row,0)->text());
+    setWindowTitle(QString::number(row+1) + ":" + dialogUrl->ui->tableWidget->item(row,0)->text());
     ui->statusBar->showMessage(surl);
     ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
