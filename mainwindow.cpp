@@ -189,7 +189,8 @@ void MainWindow::showHideList()
     }
 }
 
-void MainWindow::on_action_liveImport_triggered(){
+void MainWindow::on_action_liveImport_triggered()
+{
     if(filename==""){
         filename = QFileDialog::getOpenFileName(this, "打开文本", "tv.txt", "文本文件(*.txt)");
     }else{
@@ -206,18 +207,21 @@ void MainWindow::on_action_quit_triggered()
     qApp->quit();
 }
 
-void MainWindow::on_action_fullscreen_triggered(){
+void MainWindow::on_action_fullscreen_triggered()
+{
     EEFullscreen();
 }
 
-void MainWindow::on_action_info_triggered(){
+void MainWindow::on_action_info_triggered()
+{
 
-    QString SInfo = "视频解码：" + player->statistics().video.decoder_detail + "\n音频解码：" + player->statistics().audio.decoder_detail +"\n分辨率：" + QString::number(player->statistics().video_only.width) + " X " + QString::number(player->statistics().video_only.height);
+    QString SInfo = "媒体地址：" + player->file() + "\n视频解码：" + player->statistics().video.decoder_detail + "\n音频解码：" + player->statistics().audio.decoder_detail +"\n分辨率：" + QString::number(player->statistics().video_only.width) + " X " + QString::number(player->statistics().video_only.height);
     QMessageBox aboutMB(QMessageBox::NoIcon, "视频信息", SInfo);
     aboutMB.exec();
 }
 
-void MainWindow::on_action_capture_triggered(){
+void MainWindow::on_action_capture_triggered()
+{
     cn=1;
     player->videoCapture()->setAutoSave(true);
     //自动保存在 /home/用户名/Pictures ，不需要手动保存。
@@ -232,7 +236,8 @@ void MainWindow::on_action_capture_triggered(){
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
-QString SB(qint64 b){
+QString SB(qint64 b)
+{
     QString s="";
     if(b>999999999){
         s=QString::number(b/(1024*1024*1024.0),'f',2)+"GB";
@@ -250,7 +255,8 @@ QString SB(qint64 b){
     return s;
 }
 
-void MainWindow::on_action_capture16_triggered(){
+void MainWindow::on_action_capture16_triggered()
+{
     cn=16;
     cnn=0;
     player->pause(false);
@@ -306,7 +312,8 @@ void MainWindow::on_action_captureDirectory_triggered(){
 #endif
 }
 
-void MainWindow::on_action_rotateCW_triggered(){
+void MainWindow::on_action_rotateCW_triggered()
+{
     videoItem->setOrientation(videoItem->orientation()+90);
 }
 
@@ -370,7 +377,8 @@ void MainWindow::on_action_volumeMute_triggered()
     }
 }
 
-void MainWindow::on_action_help_triggered(){
+void MainWindow::on_action_help_triggered()
+{
     QMessageBox MB(QMessageBox::NoIcon, "帮助", "快捷键：\n空格\t播放、暂停\n回车、双击\t全屏、退出全屏\nEsc\t退出全屏\n上\t增加音量\n下\t减小音量\n左 \t快退\n右\t快进\nM\t静音\nP\t截图\nL\t左转90°\nR\t右转90°\n1\t原始视频大小\n2\t2倍视频大小\n3\t1.5倍视频大小\n4\t0.5倍视频大小\n5\t视频铺满全屏\nT\t直播列表\nI\t导入直播文件");
     MB.exec();
 }
@@ -469,7 +477,8 @@ void MainWindow::on_pushButtonFullscreen_clicked(){
     EEFullscreen();
 }
 
-void MainWindow::enterFullscreen(){    
+void MainWindow::enterFullscreen()
+{
     isListShow=ui->tableWidget->isVisible();
     posw=pos();
     showFullScreen();
@@ -486,7 +495,8 @@ void MainWindow::enterFullscreen(){
     CP->resize(desktop->width(),CP->height());
 }
 
-void MainWindow::exitFullscreen(){
+void MainWindow::exitFullscreen()
+{
     //setStyleSheet("");
     showNormal();
     ui->menuBar->show();
@@ -510,7 +520,8 @@ void MainWindow::exitFullscreen(){
 
 }
 
-void MainWindow::EEFullscreen(){    
+void MainWindow::EEFullscreen()
+{
     if(isFullScreen()){
         exitFullscreen();
     }else{
@@ -518,7 +529,8 @@ void MainWindow::EEFullscreen(){
     }
 }
 
-void MainWindow::durationChange(){
+void MainWindow::durationChange()
+{
     //ui->sliderProgress->setRange(0,player->duration());
     CP->ui->sliderProgress->setRange(0,player->duration());
     qDebug() << player->statistics().video_only.width << "X" << player->statistics().video_only.height;
@@ -537,7 +549,8 @@ void MainWindow::durationChange(){
     }
 }
 
-void MainWindow::positionChange(qint64 p){
+void MainWindow::positionChange(qint64 p)
+{
     //ui->sliderProgress->setValue(p);
     //ui->sliderProgress->setToolTip(STimeET);
     CP->ui->sliderProgress->setValue(p);
@@ -545,7 +558,8 @@ void MainWindow::positionChange(qint64 p){
     setSTime(p);
 }
 
-void MainWindow::setSTime(int v){
+void MainWindow::setSTime(int v)
+{
     QTime t(0,0,0);
     t=t.addMSecs(v);
     QString STimeElapse=t.toString("hh:mm:ss");
@@ -558,16 +572,19 @@ void MainWindow::setSTime(int v){
     CP->ui->sliderProgress->setToolTip(STimeElapse);
 }
 
-void MainWindow::timeoutTL(){
+void MainWindow::timeoutTL()
+{
     labelTL->hide();
 }
 
-void MainWindow::hideCP(){
+void MainWindow::hideCP()
+{
     CP->hide();
     if(isFullScreen())setCursor(QCursor(Qt::BlankCursor));
 }
 
-void MainWindow::volumeChange(qreal v){
+void MainWindow::volumeChange(qreal v)
+{
     //ui->sliderVolume->setValue(v*100);
     //ui->sliderVolume->setToolTip(QString::number(ui->sliderVolume->value()));
     CP->ui->sliderVolume->setToolTip(QString::number(floor(v*100)));
@@ -577,7 +594,8 @@ void MainWindow::volumeChange(qreal v){
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
-void MainWindow::playPause(){    
+void MainWindow::playPause()
+{
     //qDebug() << "state=" << player->state();
     if(player->state()==player->PlayingState){
         player->pause(true);
@@ -602,7 +620,8 @@ void MainWindow::playPause(){
     }
 }
 
-void MainWindow::createPopmenu(){
+void MainWindow::createPopmenu()
+{
     popmenu = new QMenu();
     PMAFullscreen = new QAction("全屏",this);
     PMACapture = new QAction("截图",this);
@@ -612,13 +631,15 @@ void MainWindow::createPopmenu(){
     connect(PMACapture, SIGNAL(triggered()), this, SLOT(on_action_capture_triggered()));
 }
 
-void MainWindow::contextMenuEvent(QContextMenuEvent *event){
+void MainWindow::contextMenuEvent(QContextMenuEvent *event)
+{
     //pop_menu->clear();
     popmenu->exec(QCursor::pos());
     event->accept();
 }
 
-void MainWindow::setMPPosition(int v){
+void MainWindow::setMPPosition(int v)
+{
     player->setPosition(v);
     setSTime(v);
     labelTL->setText(CP->ui->labelTimeVideo->text());
@@ -627,29 +648,35 @@ void MainWindow::setMPPosition(int v){
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
-void MainWindow::setMPPosition(){
+void MainWindow::setMPPosition()
+{
     player->setPosition(ui->sliderProgress->value());
 }
 
-void MainWindow::setVolume(int v){
+void MainWindow::setVolume(int v)
+{
     player->audio()->setVolume(v/100.0);
 }
 
-void MainWindow::setVolume(){
+void MainWindow::setVolume()
+{
     player->audio()->setVolume(ui->sliderVolume->value()/100.0);
 }
 
-void MainWindow::timeoutMouseMove(){
+void MainWindow::timeoutMouseMove()
+{
     ui->sliderProgress->hide();
 }
 
-void MainWindow::closeEvent(QCloseEvent *e){
+void MainWindow::closeEvent(QCloseEvent *e)
+{
     Q_UNUSED(e);
     //if(player)player->stop();
     //qApp->quit();
 }
 
-void MainWindow::scale(float s){
+void MainWindow::scale(float s)
+{
     qDebug() << ui->graphicsView->size();
     videoItem->resizeRenderer(player->statistics().video_only.width*s, player->statistics().video_only.height*s);
     if(isFullScreen()){
@@ -662,25 +689,29 @@ void MainWindow::scale(float s){
     }
 }
 
-void MainWindow::on_action_scale0_5_triggered(){
+void MainWindow::on_action_scale0_5_triggered()
+{
     sr=0.5;
     scale(sr);
     ui->action_scale0_5->setChecked(true);
 }
 
-void MainWindow::on_action_scale1_triggered(){
+void MainWindow::on_action_scale1_triggered()
+{
     sr=1;
     scale(sr);
     ui->action_scale1->setChecked(true);
 }
 
-void MainWindow::on_action_scale1_5_triggered(){
+void MainWindow::on_action_scale1_5_triggered()
+{
     sr=1.5;
     scale(sr);
     ui->action_scale1_5->setChecked(true);
 }
 
-void MainWindow::on_action_scale2_triggered(){
+void MainWindow::on_action_scale2_triggered()
+{
     sr=2;
     scale(sr);
     ui->action_scale2->setChecked(true);
@@ -694,11 +725,13 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent* event)
     }
 }
 
-void MainWindow::fitDesktop(){
+void MainWindow::fitDesktop()
+{
     videoItem->resizeRenderer(desktop->width(),desktop->height());
 }
 
-void MainWindow::playTV(int row,int column){
+void MainWindow::playTV(int row,int column)
+{
     Q_UNUSED(column);
     QString surl=ui->tableWidget->item(row,1)->text();
     qDebug() << "play(" << surl << ")";
@@ -711,7 +744,8 @@ void MainWindow::playTV(int row,int column){
     //}
 }
 
-void MainWindow::fillTable(QString filename){
+void MainWindow::fillTable(QString filename)
+{
     QFile *file=new QFile(filename);
     if(file->open(QIODevice::ReadOnly | QIODevice::Text)){
         ui->tableWidget->setRowCount(0);
@@ -768,7 +802,8 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 //    }
 //}
 
-void MainWindow::saveImage(QImage image){    
+void MainWindow::saveImage(QImage image)
+{
     if(cn==16){
         imagec[cnn]=image.scaled(320,240);
         QTime t(0,0,0);
@@ -882,5 +917,5 @@ void MainWindow::handleError(const AVError &e)
     labelTL->setText(e.string());
     labelTL->adjustSize();
     labelTL->show();
-    QTimer::singleShot(5000,this,SLOT(timeoutTL()));
+    QTimer::singleShot(5000,[=]{labelTL->hide();});
 }
