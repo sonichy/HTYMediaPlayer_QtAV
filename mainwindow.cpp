@@ -89,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player,SIGNAL(positionChanged(qint64)),this,SLOT(positionChange(qint64)));
     connect(player->audio(), SIGNAL(volumeChanged(qreal)), this, SLOT(volumeChange(qreal)));
     connect(player->videoCapture(), SIGNAL(imageCaptured(QImage)), SLOT(saveImage(QImage)));
+    connect(player, SIGNAL(error(QtAV::AVError)), this, SLOT(handleError(QtAV::AVError)));
 
     labelTL=new QLabel(this);
     labelTL->setStyleSheet("color:white;font:20px;background:transparent;");
@@ -351,6 +352,7 @@ void MainWindow::on_action_volumeMute_triggered()
         ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
         CP->ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolume));
         labelTL->setText("音量："+QString::number(volume));
+        labelTL->adjustSize();
         labelTL->show();
         QTimer::singleShot(3000,this,SLOT(timeoutTL()));
     }else{
@@ -362,6 +364,7 @@ void MainWindow::on_action_volumeMute_triggered()
         ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolumeMuted));
         CP->ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolumeMuted));
         labelTL->setText("静音");
+        labelTL->adjustSize();
         labelTL->show();
         QTimer::singleShot(3000,this,SLOT(timeoutTL()));
     }
@@ -374,7 +377,7 @@ void MainWindow::on_action_help_triggered(){
 
 void MainWindow::on_action_changelog_triggered()
 {
-    QString s="1.5\n(2017-09-14)\n修复时间栏样式使用rgb没有使用rgba引起的闪烁。\n(2017-08-20)\n增加拖放打开文件(不知为何视频区域无效)。\n\n1.4 (2017-07)\n更新日志太长，消息框改成带滚动条的文本框。\n设计新的浮动透明控制栏，延时自动隐藏，鼠标移动显示。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0 (2017-02)\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。";
+    QString s="1.5\n(2017-10)\n增加显示错误信息。\n(2017-09-14)\n修复时间栏样式使用rgb没有使用rgba引起的闪烁。\n(2017-08-20)\n增加拖放打开文件(不知为何视频区域无效)。\n\n1.4 (2017-07)\n更新日志太长，消息框改成带滚动条的文本框。\n设计新的浮动透明控制栏，延时自动隐藏，鼠标移动显示。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0 (2017-02)\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。";
     QDialog *dialog=new QDialog;
     dialog->setWindowTitle("更新历史");
     dialog->setFixedSize(400,300);
@@ -519,17 +522,19 @@ void MainWindow::durationChange(){
     //ui->sliderProgress->setRange(0,player->duration());
     CP->ui->sliderProgress->setRange(0,player->duration());
     qDebug() << player->statistics().video_only.width << "X" << player->statistics().video_only.height;
-    videoItem->resizeRenderer(player->statistics().video_only.width,player->statistics().video_only.height);
-    int tww;
-    if(ui->tableWidget->isVisible()){
-        tww=ui->tableWidget->width();
-    }else{
-        tww=0;
+    if(player->statistics().video_only.width != 0 || player->statistics().video_only.height != 0){
+        videoItem->resizeRenderer(player->statistics().video_only.width,player->statistics().video_only.height);
+        int tww;
+        if(ui->tableWidget->isVisible()){
+            tww=ui->tableWidget->width();
+        }else{
+            tww=0;
+        }
+        resize(player->statistics().video_only.width + tww , player->statistics().video_only.height + ui->menuBar->height());
+        move((desktop->width() - width())/2, (desktop->height() - height())/2);
+        CP->move(0,height()-CP->height());
+        CP->resize(ui->graphicsView->width(),CP->height());
     }
-    resize(player->statistics().video_only.width + tww , player->statistics().video_only.height + ui->menuBar->height());
-    move((desktop->width() - width())/2, (desktop->height() - height())/2);
-    CP->move(0,height()-CP->height());
-    CP->resize(ui->graphicsView->width(),CP->height());
 }
 
 void MainWindow::positionChange(qint64 p){
@@ -567,6 +572,7 @@ void MainWindow::volumeChange(qreal v){
     //ui->sliderVolume->setToolTip(QString::number(ui->sliderVolume->value()));
     CP->ui->sliderVolume->setToolTip(QString::number(floor(v*100)));
     labelTL->setText("音量："+QString::number(floor(v*100)));
+    labelTL->adjustSize();
     labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
@@ -868,4 +874,13 @@ void MainWindow::playURL(int row,int column)
     ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     //}
+}
+
+void MainWindow::handleError(const AVError &e)
+{
+    qDebug() << e.string();
+    labelTL->setText(e.string());
+    labelTL->adjustSize();
+    labelTL->show();
+    QTimer::singleShot(5000,this,SLOT(timeoutTL()));
 }

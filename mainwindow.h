@@ -111,6 +111,8 @@ private slots:
     void showHideList();
     void analyze();
     void playURL(int,int);
+    //void handleError(const AVError &e);
+    void handleError(const QtAV::AVError& e);
 };
 
 #endif // MAINWINDOW_H
