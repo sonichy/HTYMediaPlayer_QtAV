@@ -212,7 +212,7 @@ void MainWindow::on_action_fullscreen_triggered(){
 
 void MainWindow::on_action_info_triggered(){
 
-    QString SInfo= "视频解码：" + player->statistics().video.decoder_detail + "\n音频解码：" + player->statistics().audio.decoder_detail +"\n分辨率：" + QString::number(player->statistics().video_only.width) + " X " + QString::number(player->statistics().video_only.height);
+    QString SInfo = "视频解码：" + player->statistics().video.decoder_detail + "\n音频解码：" + player->statistics().audio.decoder_detail +"\n分辨率：" + QString::number(player->statistics().video_only.width) + " X " + QString::number(player->statistics().video_only.height);
     QMessageBox aboutMB(QMessageBox::NoIcon, "视频信息", SInfo);
     aboutMB.exec();
 }
