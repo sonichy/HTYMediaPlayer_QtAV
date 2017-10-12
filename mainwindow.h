@@ -27,7 +27,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QString filename,STimeET;
+    QString filename,STimeET,mode;
     QMenu *popmenu;
     QAction *PMAFullscreen,*PMACapture;
     int volume,cn,cnn;
@@ -110,9 +110,10 @@ private slots:
     void fillTable(QString);
     void showHideList();
     void analyze();
-    void playURL(int,int);
-    //void handleError(const AVError &e);
+    void playURL(int,int);    
     void handleError(const QtAV::AVError& e);
+    void speedUp();
+    void speedDown();
 };
 
 #endif // MAINWINDOW_H

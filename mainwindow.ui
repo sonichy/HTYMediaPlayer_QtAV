@@ -462,9 +462,6 @@
    <property name="text">
     <string>打开</string>
    </property>
-   <property name="shortcut">
-    <string>O</string>
-   </property>
   </action>
   <action name="action_quit">
    <property name="text">
@@ -513,16 +510,10 @@
    <property name="text">
     <string>打开URL</string>
    </property>
-   <property name="shortcut">
-    <string>U</string>
-   </property>
   </action>
   <action name="action_info">
    <property name="text">
     <string>信息</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+I</string>
    </property>
   </action>
   <action name="action_capture">
