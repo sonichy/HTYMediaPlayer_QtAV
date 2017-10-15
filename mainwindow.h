@@ -54,6 +54,8 @@ private:
     void dragEnterEvent(QDragEnterEvent*);
     void dropEvent(QDropEvent*);
     DialogURL *dialogUrl;
+    VideoPreviewWidget *m_preview;
+    void preview(int value);    
 
 private slots:
     void on_action_open_triggered();
@@ -91,10 +93,8 @@ private slots:
     void durationChange();
     void positionChange(qint64);
     void volumeChange(qreal);
-    void setMPPosition(int);
-    void setMPPosition();
-    void setVolume(int);
-    void setVolume();
+    void setMPPosition(int);    
+    void setVolume(int);    
     void enterFullscreen();
     void exitFullscreen();
     void EEFullscreen();
@@ -102,8 +102,7 @@ private slots:
     void playPause();    
     void contextMenuEvent(QContextMenuEvent*);
     void timeoutTL();
-    void hideCP();
-    void timeoutMouseMove();
+    void hideCP();    
     void saveImage(QImage);
     void scale(float s);
     void playTV(int,int);
