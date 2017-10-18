@@ -18,7 +18,12 @@
 #endif
 #include <QTextBrowser>
 #include <QMimeData>
-//#include <QtMath>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -54,8 +59,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(new QShortcut(QKeySequence(Qt::Key_Return),this), SIGNAL(activated()),this, SLOT(EEFullscreen()));
     connect(new QShortcut(QKeySequence(Qt::Key_Enter),this), SIGNAL(activated()),this, SLOT(EEFullscreen()));
     connect(new QShortcut(QKeySequence(Qt::Key_Space),this), SIGNAL(activated()),this, SLOT(playPause()));
-    connect(new QShortcut(QKeySequence(Qt::Key_Left),this), SIGNAL(activated()),this, SLOT(on_pushButtonSeekB_clicked()));
-    connect(new QShortcut(QKeySequence(Qt::Key_Right),this), SIGNAL(activated()),this, SLOT(on_pushButtonSeekF_clicked()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Left),this), SIGNAL(activated()),this, SLOT(seekBackward()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Right),this), SIGNAL(activated()),this, SLOT(seekForward()));
     connect(new QShortcut(QKeySequence(Qt::Key_Up),this), SIGNAL(activated()),this, SLOT(on_action_volumeUp_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_Down),this), SIGNAL(activated()),this, SLOT(on_action_volumeDown_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_M),this), SIGNAL(activated()),this, SLOT(on_action_volumeMute_triggered()));
@@ -67,19 +72,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(new QShortcut(QKeySequence(Qt::Key_3),this), SIGNAL(activated()),this, SLOT(on_action_scale1_5_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_4),this), SIGNAL(activated()),this, SLOT(on_action_scale0_5_triggered()));
     connect(new QShortcut(QKeySequence(Qt::Key_5),this), SIGNAL(activated()),this, SLOT(fitDesktop()));
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Left),this), SIGNAL(activated()),this, SLOT(on_pushButtonSkipB_clicked()));
-    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Right),this), SIGNAL(activated()),this, SLOT(on_pushButtonSkipF_clicked()));
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Left),this), SIGNAL(activated()),this, SLOT(skipBackward()));
+    connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Right),this), SIGNAL(activated()),this, SLOT(skipForward()));
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Up),this), SIGNAL(activated()),this, SLOT(speedUp()));
     connect(new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Down),this), SIGNAL(activated()),this, SLOT(speedDown()));
-    connect(CP->ui->pushButtonSkipB,SIGNAL(pressed()),this,SLOT(on_pushButtonSkipB_clicked()));
-    connect(CP->ui->pushButtonSeekB,SIGNAL(pressed()),this,SLOT(on_pushButtonSeekB_clicked()));
-    connect(CP->ui->pushButtonPlay,SIGNAL(pressed()),this,SLOT(on_pushButtonPlay_clicked()));
-    connect(CP->ui->pushButtonStop,SIGNAL(pressed()),this,SLOT(on_pushButtonStop_clicked()));
-    connect(CP->ui->pushButtonSeekF,SIGNAL(pressed()),this,SLOT(on_pushButtonSeekF_clicked()));
-    connect(CP->ui->pushButtonSkipF,SIGNAL(pressed()),this,SLOT(on_pushButtonSkipF_clicked()));
-    connect(CP->ui->pushButtonMute,SIGNAL(pressed()),this,SLOT(on_pushButtonMute_clicked()));
-    connect(CP->ui->pushButtonFullscreen,SIGNAL(pressed()),this,SLOT(EEFullscreen()));
-    connect(CP->ui->pushButtonList,SIGNAL(pressed()),this,SLOT(on_pushButtonList_clicked()));
+    connect(CP->ui->pushButtonSkipB, SIGNAL(pressed()), this, SLOT(skipBackward()));
+    connect(CP->ui->pushButtonSeekB, SIGNAL(pressed()), this, SLOT(seekBackward()));
+    connect(CP->ui->pushButtonPlay, SIGNAL(pressed()), this, SLOT(playPause()));
+    connect(CP->ui->pushButtonStop, SIGNAL(pressed()), this, SLOT(stop()));
+    connect(CP->ui->pushButtonSeekF, SIGNAL(pressed()), this, SLOT(seekForward()));
+    connect(CP->ui->pushButtonSkipF, SIGNAL(pressed()), this, SLOT(skipForward()));
+    connect(CP->ui->pushButtonMute, SIGNAL(pressed()), this, SLOT(on_action_volumeMute_triggered()));
+    connect(CP->ui->pushButtonFullscreen, SIGNAL(pressed()), this, SLOT(EEFullscreen()));
+    connect(CP->ui->pushButtonList, SIGNAL(pressed()), this, SLOT(showHideList()));
 
     player = new AVPlayer(this);
     videoItem = new GraphicsItemRenderer;
@@ -101,8 +106,8 @@ MainWindow::MainWindow(QWidget *parent) :
     desktop = QApplication::desktop();
     move((desktop->width() - width())/2, (desktop->height() - height())/2);
 
-    connect(CP->ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));    
-    connect(CP->ui->sliderVolume,SIGNAL(sliderMoved(int)),this,SLOT(setVolume(int)));    
+    connect(CP->ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));
+    connect(CP->ui->sliderVolume,SIGNAL(sliderMoved(int)),this,SLOT(setVolume(int)));
 
     createPopmenu();
 
@@ -150,11 +155,6 @@ void MainWindow::open(QString path)
 void MainWindow::on_action_openURL_triggered()
 {
     dialogUrl->show();
-}
-
-void MainWindow::on_pushButtonList_clicked()
-{
-    showHideList();
 }
 
 void MainWindow::on_action_liveList_triggered()
@@ -397,18 +397,8 @@ void MainWindow::on_action_about_triggered()
     aboutMB.exec();
 }
 
-void MainWindow::on_pushButtonPlay_clicked()
-{
-    playPause();
-}
 
-void MainWindow::on_pushButtonStop_clicked()
-{
-    player->stop();    
-    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-}
-
-void MainWindow::on_pushButtonSeekB_clicked()
+void MainWindow::seekBackward()
 {
     player->seekBackward();
     setSTime(player->position());
@@ -418,7 +408,7 @@ void MainWindow::on_pushButtonSeekB_clicked()
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
-void MainWindow::on_pushButtonSeekF_clicked()
+void MainWindow::seekForward()
 {
     player->seekForward();
     setSTime(player->position());
@@ -428,7 +418,7 @@ void MainWindow::on_pushButtonSeekF_clicked()
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
 
-void MainWindow::on_pushButtonSkipB_clicked()
+void MainWindow::skipBackward()
 {
     if( mode == "live" ){
         if( ui->tableWidget->currentRow() > 0 ){
@@ -444,7 +434,7 @@ void MainWindow::on_pushButtonSkipB_clicked()
     }
 }
 
-void MainWindow::on_pushButtonSkipF_clicked()
+void MainWindow::skipForward()
 {
     qDebug() << mode;
     if(mode=="live"){
@@ -459,15 +449,6 @@ void MainWindow::on_pushButtonSkipF_clicked()
             playURL(dialogUrl->ui->tableWidget->currentRow(),0);
         }
     }
-}
-
-void MainWindow::on_pushButtonMute_clicked()
-{
-    on_action_volumeMute_triggered();
-}
-
-void MainWindow::on_pushButtonFullscreen_clicked(){
-    EEFullscreen();
 }
 
 void MainWindow::enterFullscreen()
@@ -706,12 +687,42 @@ void MainWindow::playTV(int row,int column)
     labelTL->hide();
     mode = "live";
     QString surl=ui->tableWidget->item(row,1)->text();
-    qDebug() << "play(" << surl << ")";
-    //if(surl!=""){
-    player->play(surl);
-    setWindowTitle(ui->tableWidget->item(row,0)->text());    
+    if(surl.contains("http://vdn.live.cntv.cn/api2/live.do?channel=")){
+        qDebug() << "analyze(" << surl << ")";
+        QUrl url = QString(surl);
+        QNetworkAccessManager *NAM = new QNetworkAccessManager;
+        QNetworkRequest request(url);
+        QNetworkReply *reply = NAM->get(request);
+        QEventLoop loop;
+        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec();
+        QByteArray responseText = reply->readAll();
+        QJsonDocument json = QJsonDocument::fromJson(responseText);
+        QString hls_url = json.object().value("hls_url").toObject().value("hls4").toString();
+        qDebug() << "play(" << hls_url << ")";
+        player->play(hls_url);
+    }
+    if(surl.contains("http://apiv1.starschina.com/cms/v1.0/stream?")){
+        qDebug() << "analyze(" << surl << ")";
+        QUrl url = QString(surl);
+        QNetworkAccessManager *NAM = new QNetworkAccessManager;
+        QNetworkRequest request(url);
+        QNetworkReply *reply = NAM->get(request);
+        QEventLoop loop;
+        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec();
+        QByteArray responseText = reply->readAll();
+        QJsonDocument json = QJsonDocument::fromJson(responseText);
+        QString urls = json.object().value("data").toObject().value("play_urls").toArray()[2].toObject().value("urls").toArray()[0].toString();
+        qDebug() << "play(" << urls << ")";
+        player->play(urls);
+    }
+    else{
+        qDebug() << "play(" << surl << ")";
+        player->play(surl);
+    }
+    setWindowTitle(ui->tableWidget->item(row,0)->text());
     setFocus();
-    //}
 }
 
 void MainWindow::fillTable(QString filename)
@@ -927,4 +938,9 @@ void MainWindow::changeAudioTrack(bool b)
     QAction *action = qobject_cast<QAction*>(sender());
     player->setAudioStream(action->data().toInt());
     action->setChecked(true);
+}
+
+void MainWindow::stop()
+{
+    player->stop();
 }
