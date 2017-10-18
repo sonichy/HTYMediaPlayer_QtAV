@@ -27,7 +27,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bPressed = false;
     mode = "";
     ui->setupUi(this);
-    ui->statusBar->hide();
+    menu_soundTrack = new QMenu("音轨");
+    ui->menu_sound->addMenu(menu_soundTrack);
+
     QPalette pal(palette());
     pal.setColor(QPalette::Background, Qt::black);
     setPalette(pal);
@@ -99,15 +101,13 @@ MainWindow::MainWindow(QWidget *parent) :
     desktop = QApplication::desktop();
     move((desktop->width() - width())/2, (desktop->height() - height())/2);
 
-    connect(CP->ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));
-    //connect(CP->ui->sliderProgress,SIGNAL(sliderReleased()),m_preview,SLOT(hide()));
+    connect(CP->ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(setMPPosition(int)));    
     connect(CP->ui->sliderVolume,SIGNAL(sliderMoved(int)),this,SLOT(setVolume(int)));    
 
     createPopmenu();
 
     ui->tableWidget->setColumnHidden(1,true);
-    ui->tableWidget->setStyleSheet("QTableWidget{color:white; background-color:black;} QTableWidget::item:selected{background-color:#222222;}");
-    //connect(ui->tableWidget,SIGNAL(currentCellChanged(int,int,int,int)),this,SLOT(playTV(int,int,int,int)));
+    ui->tableWidget->setStyleSheet("QTableWidget{color:white; background-color:black;} QTableWidget::item:selected{background-color:#222222;}");    
     connect(ui->tableWidget,SIGNAL(cellClicked(int,int)),this,SLOT(playTV(int,int)));
     fillTable("tv.txt");
 
@@ -142,8 +142,7 @@ void MainWindow::on_action_open_triggered()
 void MainWindow::open(QString path)
 {
     player->play(path);    
-    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-    ui->statusBar->showMessage("打开 " + path);
+    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));    
     setWindowTitle(QFileInfo(path).fileName());
     ui->tableWidget->hide();
 }
@@ -363,7 +362,7 @@ void MainWindow::on_action_help_triggered()
 
 void MainWindow::on_action_changelog_triggered()
 {
-    QString s="1.5\n(2017-10)\n增加加速播放、减速播放。\n增加显示错误信息。\n解析分号间隔的视频片段到列表。\n(2017-09-14)\n修复时间栏样式使用rgb没有使用rgba引起的闪烁。\n(2017-08-20)\n增加拖放打开文件(不知为何视频区域无效)。\n\n1.4 (2017-07)\n更新日志太长，消息框改成带滚动条的文本框。\n设计新的浮动透明控制栏，延时自动隐藏，鼠标移动显示。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0 (2017-02)\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。";
+    QString s="1.5\n(2017-10)\n增加音轨选择。\n增加加速播放、减速播放。\n增加显示错误信息。\n解析分号间隔的视频片段到列表。\n(2017-09-14)\n修复时间栏样式使用rgb没有使用rgba引起的闪烁。\n(2017-08-20)\n增加拖放打开文件(不知为何视频区域无效)。\n\n1.4 (2017-07)\n更新日志太长，消息框改成带滚动条的文本框。\n设计新的浮动透明控制栏，延时自动隐藏，鼠标移动显示。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0 (2017-02)\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。";
     QDialog *dialog=new QDialog;
     dialog->setWindowTitle("更新历史");
     dialog->setFixedSize(400,300);
@@ -477,11 +476,6 @@ void MainWindow::enterFullscreen()
     posw=pos();
     showFullScreen();
     ui->menuBar->hide();
-    //ui->controlPanel->hide();
-    //ui->controlPanel->setWindowOpacity(0.1);
-    //ui->sliderProgress->setStyleSheet("background:black;");
-    //ui->sliderProgress->hide();
-    //ui->statusBar->hide();
     videoItem->resizeRenderer(desktop->width(),desktop->height());
     PMAFullscreen->setText("退出全屏");
     ui->tableWidget->setVisible(false);
@@ -490,15 +484,10 @@ void MainWindow::enterFullscreen()
 }
 
 void MainWindow::exitFullscreen()
-{
-    //setStyleSheet("");
+{    
     showNormal();
-    ui->menuBar->show();
-    //ui->controlPanel->show();
-    //ui->statusBar->show();
-    //ui->sliderProgress->setStyleSheet("");
-    videoItem->resizeRenderer(player->statistics().video_only.width*sr, player->statistics().video_only.height*sr);
-    //ui->sliderProgress->show();
+    ui->menuBar->show();    
+    videoItem->resizeRenderer(player->statistics().video_only.width*sr, player->statistics().video_only.height*sr);    
     ui->tableWidget->setVisible(isListShow);
     int tww;
     if(ui->tableWidget->isVisible()){
@@ -524,29 +513,41 @@ void MainWindow::EEFullscreen()
 }
 
 void MainWindow::durationChange()
-{
-    //ui->sliderProgress->setRange(0,player->duration());
+{    
     CP->ui->sliderProgress->setRange(0,player->duration());
-    qDebug() << player->statistics().video_only.width << "X" << player->statistics().video_only.height;
+    qDebug() << player->statistics().video_only.width << "X" << player->statistics().video_only.height;    
     if(player->statistics().video_only.width != 0 || player->statistics().video_only.height != 0){
-        videoItem->resizeRenderer(player->statistics().video_only.width,player->statistics().video_only.height);
+        videoItem->resizeRenderer(player->statistics().video_only.width, player->statistics().video_only.height);
 //        int tww;
 //        if(ui->tableWidget->isVisible()){
 //            tww=ui->tableWidget->width();
 //        }else{
 //            tww=0;
 //        }
-       resize(player->statistics().video_only.width , player->statistics().video_only.height + ui->menuBar->height());
-//        move((desktop->width() - width())/2, (desktop->height() - height())/2);
+        resize(player->statistics().video_only.width , player->statistics().video_only.height + ui->menuBar->height());
+//      move((desktop->width() - width())/2, (desktop->height() - height())/2);
         CP->move(0,height()-CP->height());
         CP->resize(ui->graphicsView->width(),CP->height());
     }
+
+    // 设置音轨菜单
+    menu_soundTrack->clear();
+    for(int i=0; i<player->audioStreamCount(); i++){
+        QAction *action = new QAction("音轨"+QString::number(i),this);
+        action->setData(i);
+        action->setCheckable(true);
+        menu_soundTrack->addAction(action);
+        connect(action,SIGNAL(triggered(bool)),this,SLOT(changeAudioTrack(bool)));
+    }
+    QActionGroup *AG_soundTrack = new QActionGroup(this);
+    for(int i=0; i<menu_soundTrack->actions().size(); i++){
+        AG_soundTrack->addAction(menu_soundTrack->actions().at(i));
+    }
+    menu_soundTrack->actions().at(0)->setChecked(true);
 }
 
 void MainWindow::positionChange(qint64 p)
-{
-    //ui->sliderProgress->setValue(p);
-    //ui->sliderProgress->setToolTip(STimeET);
+{    
     CP->ui->sliderProgress->setValue(p);
     CP->ui->sliderProgress->setToolTip(STimeET);
     setSTime(p);
@@ -560,8 +561,7 @@ void MainWindow::setSTime(int v)
     t.setHMS(0,0,0);
     t=t.addMSecs(player->duration());
     QString STimeTotal=t.toString("hh:mm:ss");
-    STimeET=STimeElapse+"/"+STimeTotal;
-    //ui->labelTimeVideo->setText(STimeET);
+    STimeET=STimeElapse+"/"+STimeTotal;    
     CP->ui->labelTimeVideo->setText(STimeET);
     CP->ui->sliderProgress->setToolTip(STimeElapse);
 }
@@ -578,9 +578,7 @@ void MainWindow::hideCP()
 }
 
 void MainWindow::volumeChange(qreal v)
-{
-    //ui->sliderVolume->setValue(v*100);
-    //ui->sliderVolume->setToolTip(QString::number(ui->sliderVolume->value()));
+{    
     CP->ui->sliderVolume->setToolTip(QString::number(floor(v*100)));
     labelTL->setText("音量："+QString::number(floor(v*100)));
     labelTL->adjustSize();
@@ -705,14 +703,14 @@ void MainWindow::fitDesktop()
 void MainWindow::playTV(int row,int column)
 {
     Q_UNUSED(column);
+    labelTL->hide();
     mode = "live";
     QString surl=ui->tableWidget->item(row,1)->text();
     qDebug() << "play(" << surl << ")";
     //if(surl!=""){
     player->play(surl);
-    setWindowTitle(ui->tableWidget->item(row,0)->text());
-    ui->statusBar->showMessage("直播 "+surl);    
-    CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+    setWindowTitle(ui->tableWidget->item(row,0)->text());    
+    setFocus();
     //}
 }
 
@@ -736,8 +734,7 @@ void MainWindow::fillTable(QString filename)
                 ui->tableWidget->setItem(i,1,new QTableWidgetItem(""));
             }
         }
-        ui->tableWidget->resizeColumnsToContents();
-        ui->statusBar->showMessage("导入 " + filename + "，共" + QString::number(ui->tableWidget->rowCount()) + "个节目");
+        ui->tableWidget->resizeColumnsToContents();        
     }
 }
 
@@ -840,8 +837,7 @@ void MainWindow::analyze()
     QString surl=dialogUrl->ui->lineEdit->text();
     if(!surl.isEmpty()){
         if(surl.contains(".m3u8")){
-            player->play(surl);
-            ui->statusBar->showMessage("打开 "+surl);
+            player->play(surl);            
             setWindowTitle(QFileInfo(surl).fileName());
         }
         if(surl.contains(";")){
@@ -871,8 +867,7 @@ void MainWindow::playURL(int row,int column)
     player->play(surl);
     if(isFullScreen())fitDesktop();
     //dialogUrl->hide();
-    setWindowTitle(QString::number(row+1) + ":" + dialogUrl->ui->tableWidget->item(row,0)->text());
-    ui->statusBar->showMessage(surl);    
+    setWindowTitle(QString::number(row+1) + ":" + dialogUrl->ui->tableWidget->item(row,0)->text());    
     CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     //}
 }
@@ -924,4 +919,12 @@ void MainWindow::preview(int value)
     m_preview->resize(w,h);
     m_preview->move(cursor().pos().x()-w/2 , cursor().pos().y()-h-20);
     m_preview->show();
+}
+
+void MainWindow::changeAudioTrack(bool b)
+{
+    Q_UNUSED(b);
+    QAction *action = qobject_cast<QAction*>(sender());
+    player->setAudioStream(action->data().toInt());
+    action->setChecked(true);
 }

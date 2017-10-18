@@ -128,11 +128,11 @@
      <height>24</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="menu_file">
     <property name="title">
      <string>文件</string>
     </property>
-    <widget class="QMenu" name="menu_6">
+    <widget class="QMenu" name="menu_live">
      <property name="title">
       <string>直播</string>
      </property>
@@ -141,10 +141,10 @@
     </widget>
     <addaction name="action_open"/>
     <addaction name="action_openURL"/>
-    <addaction name="menu_6"/>
+    <addaction name="menu_live"/>
     <addaction name="action_quit"/>
    </widget>
-   <widget class="QMenu" name="menu_2">
+   <widget class="QMenu" name="menu_help">
     <property name="title">
      <string>帮助</string>
     </property>
@@ -153,11 +153,11 @@
     <addaction name="action_aboutQtAV"/>
     <addaction name="action_about"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
+   <widget class="QMenu" name="menu_video">
     <property name="title">
      <string>视频</string>
     </property>
-    <widget class="QMenu" name="menu_5">
+    <widget class="QMenu" name="menu_scale">
      <property name="title">
       <string>缩放</string>
      </property>
@@ -171,11 +171,11 @@
     <addaction name="action_capture"/>
     <addaction name="action_captureDirectory"/>
     <addaction name="action_capture16"/>
-    <addaction name="menu_5"/>
+    <addaction name="menu_scale"/>
     <addaction name="action_rotateCW"/>
     <addaction name="action_rotateCCW"/>
    </widget>
-   <widget class="QMenu" name="menu_4">
+   <widget class="QMenu" name="menu_sound">
     <property name="title">
      <string>音频</string>
     </property>
@@ -183,12 +183,11 @@
     <addaction name="action_volumeDown"/>
     <addaction name="action_volumeMute"/>
    </widget>
-   <addaction name="menu"/>
-   <addaction name="menu_3"/>
-   <addaction name="menu_4"/>
-   <addaction name="menu_2"/>
+   <addaction name="menu_file"/>
+   <addaction name="menu_video"/>
+   <addaction name="menu_sound"/>
+   <addaction name="menu_help"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="action_open">
    <property name="text">
     <string>打开</string>
@@ -326,6 +325,11 @@
   <action name="action_captureDirectory">
    <property name="text">
     <string>截图目录</string>
+   </property>
+  </action>
+  <action name="action_soundTrack">
+   <property name="text">
+    <string>音轨</string>
    </property>
   </action>
  </widget>

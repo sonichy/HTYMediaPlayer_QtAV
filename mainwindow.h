@@ -28,7 +28,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QString filename,STimeET,mode;
-    QMenu *popmenu;
+    QMenu *popmenu,*menu_soundTrack;
     QAction *PMAFullscreen,*PMACapture;
     int volume,cn,cnn;
     float sr;
@@ -55,7 +55,7 @@ private:
     void dropEvent(QDropEvent*);
     DialogURL *dialogUrl;
     VideoPreviewWidget *m_preview;
-    void preview(int value);    
+    void preview(int value);
 
 private slots:
     void on_action_open_triggered();
@@ -113,6 +113,7 @@ private slots:
     void handleError(const QtAV::AVError& e);
     void speedUp();
     void speedDown();
+    void changeAudioTrack(bool);
 };
 
 #endif // MAINWINDOW_H
