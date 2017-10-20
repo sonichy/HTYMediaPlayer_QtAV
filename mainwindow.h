@@ -110,6 +110,7 @@ private slots:
     void speedUp();
     void speedDown();
     void changeAudioTrack(bool);
+    void stateChange(QtAV::AVPlayer::State);
 };
 
 #endif // MAINWINDOW_H

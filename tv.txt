@@ -4,7 +4,7 @@ CCTV-2,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv2&client
 CCTV-3,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv3&client=iosapp
 CCTV-4,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv4&client=iosapp
 CCTV-5,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv5&client=iosapp
-CCTV-6,http://mmy.starschinalive.com/9991006/ch29.m3u8?f3tm=1508258127&f3key=7203740ddf2b3477640cd18d4ed9175b
+CCTV-6,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv6&client=iosapp
 CCTV-7,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv7&client=iosapp
 CCTV-8,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv8&client=iosapp
 CCTV-9,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv9&client=iosapp
@@ -16,13 +16,13 @@ CCTV-14,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv10&clie
 CCTV-15,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv10&client=iosapp
 卫视
 湖南卫视,http://apiv1.starschina.com/cms/v1.0/stream?app_key=xdThhy2239daax&app_version=7.4.11&id=179&installation_id=1709271813429913&os_type=1
-湖北卫视,http://mmy.starschinalive.com/9990120/ch40.m3u8?f3tm=1508258664&f3key=ded26beae49be088f9d4fa2ce32cca17
-广东卫视,http://mmy.starschinalive.com/9990121/ch5.m3u8?f3tm=1508258722&f3key=860b48ad8c291a56be516f802be0cbec
+湖北卫视,http://apiv1.starschina.com/cms/v1.0/stream?app_key=xdThhy2239daax&app_version=7.4.11&id=171&installation_id=1709271813429913&os_type=1
+广东卫视,http://apiv1.starschina.com/cms/v1.0/stream?app_key=xdThhy2239daax&app_version=7.4.11&id=180&installation_id=1709271813429913&os_type=1
 广西卫视,http://wscdn.hls.video.qq.com/100104000.m3u8?cdn=wangsu&sdtfrom=v10132&platform=10103&butype=1&scheduleflag=1&HLSP2P=1&buname=qqlive&vkey=3B15CF66FAEF1F812DBB1412DEFD1AF492D4698C0E7E142A13171AB20CF792A66ED1BB4610E6BDE67D1188BA2A82476799B1EAF32204F5F6C75655343E34D6B62AD3FC5A3211E910D9D31BDDB139EE5364FBB5C8B16288C7
-江苏卫视,http://mmy.starschinalive.com/9991106/ch36.m3u8?f3tm=1508258824&f3key=eb55258a604665eace1f649e2a12ddd3
-江西卫视,http://mmy.starschinalive.com/9990130/ch33.m3u8?f3tm=1508258847&f3key=430fceeac9e0757a65e7bad7f3bd9adb
-东方卫视,http://mmy.starschinalive.com/9990128/ch8.m3u8?f3tm=1508258898&f3key=402fca7a7710b746cf9f533a38f84b8d
-东南卫视,http://mmy.starschinalive.com/9990129/ch45.m3u8?f3tm=1508258937&f3key=14a9698878d9ba7e4ce449dacb7cec21
+江苏卫视,http://apiv1.starschina.com/cms/v1.0/stream?app_key=xdThhy2239daax&app_version=7.4.11&id=139&installation_id=1709271813429913&os_type=1
+江西卫视,http://223.82.250.72/ysten-bussiness/live/jiangxistv/jiangxistv_20171020_172950_173000.ts
+东方卫视,http://223.82.250.72/ysten-bussiness/live/hddongfangstv/hddongfangstv_20171020_173026_173036.ts
+东南卫视,http://apiv1.starschina.com/cms/v1.0/stream?app_key=xdThhy2239daax&app_version=7.4.11&id=163&installation_id=1709271813429913&os_type=1
 浙江卫视,http://mmy.starschinalive.com/9991113/ch29.m3u8?f3tm=1508258985&f3key=640b95b6b1fd6ccc61ec558c446d1ede
 深圳卫视,http://wscdn.hls.video.qq.com/100003601.m3u8?cdn=wangsu&sdtfrom=v10132&platform=10103&butype=1&scheduleflag=1&HLSP2P=1&buname=qqlive&vkey=302ACD4A06CA5391E8C60B811578D09CEFEAB00A068051E7190C15D564065DE0A00FE7214A1021936AA202A5F387F09D6C3347DB42B0F5349CBC660E97844B9612B485C840F28D15951D60C3EAEB816226D9843CD0FCE298
 安徽卫视,http://r.gslb.lecloud.com/live/hls/201704243000000wn99/desc.m3u8
@@ -57,7 +57,7 @@ CCTV-15,http://vdn.live.cntv.cn/api2/live.do?channel=pa://cctv_p2p_hdcctv10&clie
 影视
 CCTV-6,http://cctv.live.cntv.liveplay.myqcloud.com:8000/live/flv/channel218?ptype=1&amode=1&AUTH=cntv0001201706231MsaWKhZdM8O8IPjZNVNEYOdIwHf0PBy+gZ9R5V6pbgaXSmkgcrwtjgyLsoSIvukNypvKfPMuz0+21pppEux5g==
 广东影视,http://r.gslb.lecloud.com/live/hls/201612083000002ja99/desc.m3u8
-湖南电视剧,http://175.6.15.34:8080/nn_live/nn_x64/aWQ9SE5EU0pNUFAzNjAmdXJsX2MxPTIwMDAmbm5fYWs9MDFiNDBkODVkOTVkNDY2OWE0ZjFkNzZiYzhlMmVjNjM2YyZudHRsPTMmbmNtc2lkPTExMDI0MDExJm5ncz01OWU2MTA0MTAwMDRkNmQ4MTA0YzM5MTMzMmY3YmEzZiZubmQ9emdkeC5odW5hbi5oZW5neWFuZyZuZnQ9dHMmZGZsb3c9MSZubl91c2VyX2lkPTAmbmRpPTEwJm5kdj0yMDE1MDYwNC4xJm5kdD1wYWQmbmFsPTAxNDExMGU2NTkwNjA3NmYxYTQyOWQzMzg0NzgzZGY5MzQ3NGRmNTI4MDc0MmU,/HNDSJMPP360.m3u8
+湖南电视剧,http://live.api.hunantv.com/pc/getById?liveId=484&liveType=2
 潇湘电影,http://119.39.133.90:6610/001/2/ch00000090990000001070/2500.m3u8?IASHttpSessionId=OTT1644820170331030353030676&m3u8_level=2&virtualDomain=001.live_hls.zte.com&ispcode=10002
 东方电影,http://yfcdn.live.pptv.com/live/2659025d519e4162b19551a80bb4b4bb/1508248445.ts?type=yunfancdn
 黑龙江影视,http://stream2.hljtv.com/hljys/sd/live.m3u8

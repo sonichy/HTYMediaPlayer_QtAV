@@ -98,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player->audio(), SIGNAL(volumeChanged(qreal)), this, SLOT(volumeChange(qreal)));
     connect(player->videoCapture(), SIGNAL(imageCaptured(QImage)), SLOT(saveImage(QImage)));
     connect(player, SIGNAL(error(QtAV::AVError)), this, SLOT(handleError(QtAV::AVError)));
+    connect(player,SIGNAL(stateChanged(QtAV::AVPlayer::State)),this,SLOT(stateChange(QtAV::AVPlayer::State)));
 
     labelTL=new QLabel(this);
     labelTL->setStyleSheet("color:white;font:20px;background:transparent;");
@@ -570,18 +571,14 @@ void MainWindow::volumeChange(qreal v)
 void MainWindow::playPause()
 {
     //qDebug() << "state=" << player->state();
-    if(player->state()==player->PlayingState){
+    if(player->state() == player->PlayingState){
         player->pause(true);
-        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        CP->ui->pushButtonPlay->setToolTip("播放");
-    }else if(player->state()==player->PausedState){
+    }
+    if(player->state()==player->PausedState){
         player->pause(false);
-        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        CP->ui->pushButtonPlay->setToolTip("暂停");
-    }else if(player->state()==player->StoppedState){
-        player->play();        
-        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        CP->ui->pushButtonPlay->setToolTip("暂停");
+    }
+    if(player->state()==player->StoppedState){
+        player->play();
     }
 }
 
@@ -715,7 +712,24 @@ void MainWindow::playTV(int row,int column)
         loop.exec();
         QByteArray responseText = reply->readAll();
         QJsonDocument json = QJsonDocument::fromJson(responseText);
-        QString urls = json.object().value("data").toObject().value("play_urls").toArray()[2].toObject().value("urls").toArray()[0].toString();
+        QJsonArray play_urls = json.object().value("data").toObject().value("play_urls").toArray();
+        QString urls = play_urls.last().toObject().value("urls").toArray()[0].toString();
+        qDebug() << "play(" << urls << ")";
+        player->play(urls);
+    }
+    if(surl.contains("http://live.api.hunantv.com/pc/getById?")){
+        qDebug() << "analyze(" << surl << ")";
+        QUrl url = QString(surl);
+        QNetworkAccessManager *NAM = new QNetworkAccessManager;
+        QNetworkRequest request(url);
+        QNetworkReply *reply = NAM->get(request);
+        QEventLoop loop;
+        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec();
+        QByteArray responseText = reply->readAll();
+        QJsonDocument json = QJsonDocument::fromJson(responseText);
+        QJsonArray html5Sources = json.object().value("data").toObject().value("html5Sources").toArray();
+        QString urls = html5Sources.last().toObject().value("url").toString();
         qDebug() << "play(" << urls << ")";
         player->play(urls);
     }
@@ -945,4 +959,20 @@ void MainWindow::changeAudioTrack(bool b)
 void MainWindow::stop()
 {
     player->stop();
+}
+
+void MainWindow::stateChange(QtAV::AVPlayer::State state)
+{
+    if ( state == player->PlayingState ) {
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        CP->ui->pushButtonPlay->setToolTip("暂停");
+    }
+    if ( state == player->PausedState ) {
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        CP->ui->pushButtonPlay->setToolTip("播放");
+    }
+    if ( state == player->StoppedState ) {
+        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        CP->ui->pushButtonPlay->setToolTip("播放");
+    }
 }
