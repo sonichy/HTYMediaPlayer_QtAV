@@ -573,11 +573,9 @@ void MainWindow::playPause()
     //qDebug() << "state=" << player->state();
     if(player->state() == player->PlayingState){
         player->pause(true);
-    }
-    if(player->state()==player->PausedState){
+    }else if(player->state() == player->PausedState){
         player->pause(false);
-    }
-    if(player->state()==player->StoppedState){
+    }else if(player->state() == player->StoppedState){
         player->play();
     }
 }
