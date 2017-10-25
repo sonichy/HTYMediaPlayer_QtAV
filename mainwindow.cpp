@@ -141,14 +141,14 @@ MainWindow::MainWindow(QWidget *parent) :
     for (int i = 0; i < length; i++) {
         url += getwchar();
     }
-    setWindowTitle(url);
     //浏览器端传来的数据会有一个双引号引在两端
     url = url.mid(1, url.length()-2);
     qDebug() << url;
-    //if(url!=""){
+    if(url!=""){
         ui->tableWidget->hide();
         player->play(url);
-    //}
+        setWindowTitle(url);
+    }
 }
 
 MainWindow::~MainWindow()
