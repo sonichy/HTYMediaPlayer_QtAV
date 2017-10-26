@@ -139,9 +139,15 @@
      <addaction name="action_liveList"/>
      <addaction name="action_liveImport"/>
     </widget>
+    <widget class="QMenu" name="menu_history">
+     <property name="title">
+      <string>历史记录</string>
+     </property>
+    </widget>
     <addaction name="action_open"/>
     <addaction name="action_openURL"/>
     <addaction name="menu_live"/>
+    <addaction name="menu_history"/>
     <addaction name="action_quit"/>
    </widget>
    <widget class="QMenu" name="menu_help">
@@ -179,9 +185,15 @@
     <property name="title">
      <string>音频</string>
     </property>
+    <widget class="QMenu" name="menu_soundTrack">
+     <property name="title">
+      <string>音轨</string>
+     </property>
+    </widget>
     <addaction name="action_volumeUp"/>
     <addaction name="action_volumeDown"/>
     <addaction name="action_volumeMute"/>
+    <addaction name="menu_soundTrack"/>
    </widget>
    <addaction name="menu_file"/>
    <addaction name="menu_video"/>
@@ -330,6 +342,16 @@
   <action name="action_soundTrack">
    <property name="text">
     <string>音轨</string>
+   </property>
+  </action>
+  <action name="actionG">
+   <property name="text">
+    <string>g</string>
+   </property>
+  </action>
+  <action name="actionA">
+   <property name="text">
+    <string>a</string>
    </property>
   </action>
  </widget>

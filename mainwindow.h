@@ -27,10 +27,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QString filename,STimeET,mode;
-    QMenu *popmenu,*menu_soundTrack;
-    QAction *PMAFullscreen,*PMACapture;
-    int volume,cn,cnn;
+    QString filename, STimeET, mode;
+    QMenu *popmenu, *menu_soundTrack;
+    QAction *PMAFullscreen, *PMACapture;
+    int volume, cn, cnn;
     float sr;
     QLabel *labelTL;
     AVPlayer *player;
@@ -111,6 +111,8 @@ private slots:
     void speedDown();
     void changeAudioTrack(bool);
     void stateChange(QtAV::AVPlayer::State);
+    void addHistory(QString);
+    void openHistory(bool);
 };
 
 #endif // MAINWINDOW_H

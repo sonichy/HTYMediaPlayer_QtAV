@@ -33,8 +33,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bPressed = false;
     mode = "";
     ui->setupUi(this);
-    menu_soundTrack = new QMenu("音轨");
-    ui->menu_sound->addMenu(menu_soundTrack);
 
     QPalette pal(palette());
     pal.setColor(QPalette::Background, Qt::black);
@@ -133,12 +131,12 @@ MainWindow::MainWindow(QWidget *parent) :
     //read the first four bytes (=> Length)
     //getwchar: receive char from stdin
     //putwchar: write char to stdout
-    for (int i = 0; i < 4; i++) {
+    for ( int i = 0; i < 4; i++) {
         length += getwchar();
     }
     //read the json-message
     QString url = "";
-    for (int i = 0; i < length; i++) {
+    for ( int i = 0; i < length; i++) {
         url += getwchar();
     }
     //浏览器端传来的数据会有一个双引号引在两端
@@ -147,6 +145,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if(url!=""){
         ui->tableWidget->hide();
         player->play(url);
+        addHistory(url);
         setWindowTitle(url);
     }
 }
@@ -170,7 +169,8 @@ void MainWindow::on_action_open_triggered()
 
 void MainWindow::open(QString path)
 {
-    player->play(path);    
+    player->play(path);
+    addHistory(path);
     CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));    
     setWindowTitle(QFileInfo(path).fileName());
     ui->tableWidget->hide();
@@ -536,19 +536,19 @@ void MainWindow::durationChange()
     }
 
     // 设置音轨菜单
-    menu_soundTrack->clear();
+    ui->menu_soundTrack->clear();
     for(int i=0; i<player->audioStreamCount(); i++){
-        QAction *action = new QAction("音轨"+QString::number(i),this);
+        QAction *action = new QAction("音轨" + QString::number(i), this);
         action->setData(i);
         action->setCheckable(true);
-        menu_soundTrack->addAction(action);
+        ui->menu_soundTrack->addAction(action);
         connect(action,SIGNAL(triggered(bool)),this,SLOT(changeAudioTrack(bool)));
     }
     QActionGroup *AG_soundTrack = new QActionGroup(this);
-    for(int i=0; i<menu_soundTrack->actions().size(); i++){
-        AG_soundTrack->addAction(menu_soundTrack->actions().at(i));
+    for(int i=0; i<ui->menu_soundTrack->actions().size(); i++){
+        AG_soundTrack->addAction(ui->menu_soundTrack->actions().at(i));
     }
-    menu_soundTrack->actions().at(0)->setChecked(true);
+    ui->menu_soundTrack->actions().at(0)->setChecked(true);
 }
 
 void MainWindow::positionChange(qint64 p)
@@ -707,6 +707,7 @@ void MainWindow::playTV(int row,int column)
     labelTL->hide();
     mode = "live";
     QString surl=ui->tableWidget->item(row,1)->text();
+    QString realurl="";
     if(surl.contains("http://vdn.live.cntv.cn/api2/live.do?channel=")){
         qDebug() << "analyze(" << surl << ")";
         QUrl url = QString(surl);
@@ -719,10 +720,10 @@ void MainWindow::playTV(int row,int column)
         QByteArray responseText = reply->readAll();
         QJsonDocument json = QJsonDocument::fromJson(responseText);
         QString hls_url = json.object().value("hls_url").toObject().value("hls4").toString();
-        qDebug() << "play(" << hls_url << ")";
-        player->play(hls_url);
-    }
-    if(surl.contains("http://apiv1.starschina.com/cms/v1.0/stream?")){
+        //qDebug() << "play(" << hls_url << ")";
+        //player->play(hls_url);
+        realurl = hls_url;
+    }else if(surl.contains("http://apiv1.starschina.com/cms/v1.0/stream?")){
         qDebug() << "analyze(" << surl << ")";
         QUrl url = QString(surl);
         QNetworkAccessManager *NAM = new QNetworkAccessManager;
@@ -735,10 +736,10 @@ void MainWindow::playTV(int row,int column)
         QJsonDocument json = QJsonDocument::fromJson(responseText);
         QJsonArray play_urls = json.object().value("data").toObject().value("play_urls").toArray();
         QString urls = play_urls.last().toObject().value("urls").toArray()[0].toString();
-        qDebug() << "play(" << urls << ")";
-        player->play(urls);
-    }
-    if(surl.contains("http://live.api.hunantv.com/pc/getById?")){
+        //qDebug() << "play(" << urls << ")";
+        //player->play(urls);
+        realurl = urls;
+    }else if(surl.contains("http://live.api.hunantv.com/pc/getById?")){
         qDebug() << "analyze(" << surl << ")";
         QUrl url = QString(surl);
         QNetworkAccessManager *NAM = new QNetworkAccessManager;
@@ -751,13 +752,17 @@ void MainWindow::playTV(int row,int column)
         QJsonDocument json = QJsonDocument::fromJson(responseText);
         QJsonArray html5Sources = json.object().value("data").toObject().value("html5Sources").toArray();
         QString urls = html5Sources.last().toObject().value("url").toString();
-        qDebug() << "play(" << urls << ")";
-        player->play(urls);
+        //qDebug() << "play(" << urls << ")";
+        //player->play(urls);
+        realurl = urls;
+    }else{
+        //qDebug() << "play(" << surl << ")";
+        //player->play(surl);
+        realurl = surl;
     }
-    else{
-        qDebug() << "play(" << surl << ")";
-        player->play(surl);
-    }
+    qDebug() << "play(" << realurl << ")";
+    player->play(realurl);
+    addHistory(realurl);
     setWindowTitle(ui->tableWidget->item(row,0)->text());
     setFocus();
 }
@@ -885,7 +890,8 @@ void MainWindow::analyze()
     QString surl=dialogUrl->ui->lineEdit->text();
     if(!surl.isEmpty()){
         if(surl.contains(".m3u8")){
-            player->play(surl);            
+            player->play(surl);
+            addHistory(surl);
             setWindowTitle(QFileInfo(surl).fileName());
         }
         if(surl.contains(";")){
@@ -913,6 +919,7 @@ void MainWindow::playURL(int row,int column)
     qDebug() << "play(" << surl << ")";
     //if(surl!=""){
     player->play(surl);
+    addHistory(surl);
     if(isFullScreen())fitDesktop();
     //dialogUrl->hide();
     setWindowTitle(QString::number(row+1) + ":" + dialogUrl->ui->tableWidget->item(row,0)->text());    
@@ -996,4 +1003,19 @@ void MainWindow::stateChange(QtAV::AVPlayer::State state)
         CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         CP->ui->pushButtonPlay->setToolTip("播放");
     }
+}
+
+void MainWindow::addHistory(QString url)
+{
+    QAction *action = new QAction(url, this);
+    action->setData(url);
+    ui->menu_history->addAction(action);
+    connect(action,SIGNAL(triggered(bool)),this,SLOT(openHistory(bool)));
+}
+
+void MainWindow::openHistory(bool b)
+{
+    Q_UNUSED(b);
+    QAction *action = qobject_cast<QAction*>(sender());
+    player->play(action->data().toString());
 }
