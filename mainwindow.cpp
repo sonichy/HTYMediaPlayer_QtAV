@@ -706,8 +706,8 @@ void MainWindow::playTV(int row,int column)
     Q_UNUSED(column);
     labelTL->hide();
     mode = "live";
-    QString surl=ui->tableWidget->item(row,1)->text();
-    QString realurl="";
+    QString surl = ui->tableWidget->item(row,1)->text();
+    QString realurl = "";
     if(surl.contains("http://vdn.live.cntv.cn/api2/live.do?channel=")){
         qDebug() << "analyze(" << surl << ")";
         QUrl url = QString(surl);
@@ -887,13 +887,8 @@ void MainWindow::dropEvent(QDropEvent *e) //释放对方时，执行的操作
 
 void MainWindow::analyze()
 {
-    QString surl=dialogUrl->ui->lineEdit->text();
+    QString surl = dialogUrl->ui->lineEdit->text();
     if(!surl.isEmpty()){
-        if(surl.contains(".m3u8")){
-            player->play(surl);
-            addHistory(surl);
-            setWindowTitle(QFileInfo(surl).fileName());
-        }
         if(surl.contains(";")){
             mode = "urllist";
             dialogUrl->ui->tableWidget->setRowCount(0);
@@ -906,8 +901,12 @@ void MainWindow::analyze()
             dialogUrl->ui->tableWidget->resizeColumnsToContents();
             dialogUrl->ui->tableWidget->setCurrentCell(0,0);
             playURL(0,0);
-        }        
-        CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        }else{
+            player->play(surl);
+            addHistory(surl);
+            setWindowTitle(QFileInfo(surl).fileName());
+        }
+        //CP->ui->pushButtonPlay->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     }
 }
 
