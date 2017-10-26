@@ -119,14 +119,15 @@ MainWindow::MainWindow(QWidget *parent) :
     QStringList Largs = QApplication::arguments();
     qDebug() << Largs;
     if(Largs.length()>1){
-        open(Largs.at(1));
+        if(!Largs.at(1).contains("chrome-extension://"))
+            open(Largs.at(1));
     }
 
     dialogUrl = new DialogURL(this);
     connect(dialogUrl->ui->pushButtonAnalyze,SIGNAL(pressed()),this,SLOT(analyze()));
     connect(dialogUrl->ui->tableWidget,SIGNAL(cellClicked(int,int)),this,SLOT(playURL(int,int)));
 
-    // 接收浏览器传来的数据
+    // 接收Chrome扩展传来的数据
     int length = 0;
     //read the first four bytes (=> Length)
     //getwchar: receive char from stdin
