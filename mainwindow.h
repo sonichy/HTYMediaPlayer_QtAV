@@ -50,12 +50,12 @@ private:
     void open(QString);
     ControlPanel *CP;
     bool eventFilter(QObject*, QEvent*);
-    void setSTime(int v);
+    void setSTime(qint64 v);
     void dragEnterEvent(QDragEnterEvent*);
     void dropEvent(QDropEvent*);
     DialogURL *dialogUrl;
-    VideoPreviewWidget *m_preview;
-    void preview(int value);
+    VideoPreviewWidget *m_preview;    
+    QString SB(qint64 b);
 
 private slots:
     void on_action_open_triggered();
@@ -89,8 +89,6 @@ private slots:
     void durationChange();
     void positionChange(qint64);
     void volumeChange(qreal);
-    void setMPPosition(int);    
-    void setVolume(int);    
     void enterFullscreen();
     void exitFullscreen();
     void EEFullscreen();
@@ -113,6 +111,11 @@ private slots:
     void stateChange(QtAV::AVPlayer::State);
     void addHistory(QString);
     void openHistory(bool);
+    void preview(int value);
+    void sliderProgressPressed();
+    void sliderProgressMoved(int v);
+    void sliderProgressReleased();
+    void sliderVolumeMoved(int);
 };
 
 #endif // MAINWINDOW_H
