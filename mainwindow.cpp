@@ -108,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(CP->ui->sliderProgress,SIGNAL(sliderPressed()),this,SLOT(sliderProgressPressed()));
     connect(CP->ui->sliderProgress,SIGNAL(sliderReleased()),this,SLOT(sliderProgressReleased()));
-    connect(CP->ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(sliderProgressMoved(int)));
+    //connect(CP->ui->sliderProgress,SIGNAL(sliderMoved(int)),this,SLOT(sliderProgressMoved(int)));
     connect(CP->ui->sliderVolume,SIGNAL(sliderMoved(int)),this,SLOT(sliderVolumeMoved(int)));
 
     createPopmenu();
@@ -1027,5 +1027,9 @@ void MainWindow::sliderProgressMoved(int v)
 
 void MainWindow::sliderProgressReleased()
 {
+    player->setPosition(CP->ui->sliderProgress->value());
+    labelTL->setText(CP->ui->labelTimeVideo->text());
+    labelTL->adjustSize();
+    labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
 }
