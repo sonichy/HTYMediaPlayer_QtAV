@@ -13,9 +13,7 @@
 #include <QGraphicsView>
 #include <QTableWidget>
 #include <QDesktopServices>
-#if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
 #include <QStandardPaths>
-#endif
 #include <QTextBrowser>
 #include <QMimeData>
 #include <QtNetwork/QNetworkAccessManager>
@@ -122,6 +120,9 @@ MainWindow::MainWindow(QWidget *parent) :
     qDebug() << Largs;
     if(Largs.length()>1){
         if(!Largs.at(1).contains("chrome-extension://")){
+            //QString path = Largs.at(1);
+            //open(path.replace("file://",""));
+            qDebug() << "args:" << Largs.at(1);
             open(Largs.at(1));
         }else{
             // 下面这段如果在没有参数时使用，会导致调试时窗口出不来和从外部程序启动打开文件中断
@@ -140,7 +141,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             //浏览器端传来的数据会有一个双引号引在两端
             url = url.mid(1, url.length()-2);
-            qDebug() << url;
+            qDebug() << "chrome-extension://" << url;
             if(url!=""){
                 ui->tableWidget->hide();
                 player->play(url);
@@ -497,17 +498,17 @@ void MainWindow::enterFullscreen()
 void MainWindow::exitFullscreen()
 {    
     showNormal();
-    ui->menuBar->show();    
-    videoItem->resizeRenderer(player->statistics().video_only.width*sr, player->statistics().video_only.height*sr);    
+    ui->menuBar->show();
+    //videoItem->resizeRenderer(player->statistics().video_only.width*sr, player->statistics().video_only.height*sr);
     ui->tableWidget->setVisible(isListShow);
     int tww;
-    if(ui->tableWidget->isVisible()){
+    if (ui->tableWidget->isVisible()) {
         tww = ui->tableWidget->width();
-    }else{
+    } else {
         tww = 0;
     }
-    resize(player->statistics().video_only.width*sr + tww, player->statistics().video_only.height*sr + ui->menuBar->height());
-    move(posw);
+    //resize(player->statistics().video_only.width*sr + tww, player->statistics().video_only.height*sr + ui->menuBar->height());
+    //move(posw);
     PMAFullscreen->setText("全屏");
     CP->move(0,height()-CP->height());
     CP->resize(width()-tww,CP->height());
@@ -516,9 +517,9 @@ void MainWindow::exitFullscreen()
 
 void MainWindow::EEFullscreen()
 {
-    if(isFullScreen()){
+    if (isFullScreen()) {
         exitFullscreen();
-    }else{
+    } else {
         enterFullscreen();
     }
 }
@@ -584,13 +585,13 @@ void MainWindow::timeoutTL()
 void MainWindow::hideCP()
 {
     CP->hide();
-    if(isFullScreen())setCursor(QCursor(Qt::BlankCursor));
+    if (isFullScreen()) setCursor(QCursor(Qt::BlankCursor));
 }
 
 void MainWindow::volumeChange(qreal v)
 {    
     CP->ui->sliderVolume->setToolTip(QString::number(floor(v*100)));
-    labelTL->setText("音量："+QString::number(floor(v*100)));
+    labelTL->setText("音量：" + QString::number(floor(v*100)));
     labelTL->adjustSize();
     labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
@@ -640,42 +641,43 @@ void MainWindow::closeEvent(QCloseEvent *e)
 
 void MainWindow::scale(float s)
 {    
-    if(isMaximized())showNormal();
-    videoItem->resizeRenderer(player->statistics().video_only.width*s, player->statistics().video_only.height*s);
-    if(isFullScreen()){
-        //ui->graphicsView->setAlignment(Qt::AlignCenter);
-        ui->graphicsView->move((desktop->width()-player->statistics().video_only.width*s)/2,(desktop->height()-player->statistics().video_only.height*s)/2);
-    }else{
-        resize(player->statistics().video_only.width*s ,player->statistics().video_only.height*s + ui->menuBar->height());
-        CP->move(0,height()-CP->height());
-        CP->resize(ui->graphicsView->width(),CP->height());
+    if (isMaximized()) showNormal();
+    if (player->statistics().video_only.width != 0 || player->statistics().video_only.height != 0) {
+        videoItem->resizeRenderer(player->statistics().video_only.width * s, player->statistics().video_only.height * s);
+        if (isFullScreen()) {
+            ui->graphicsView->move((desktop->width() - player->statistics().video_only.width * s)/2, (desktop->height() - player->statistics().video_only.height * s)/2);
+        } else {
+            resize(player->statistics().video_only.width * s, player->statistics().video_only.height * s + ui->menuBar->height());
+            CP->move(0, height() - CP->height());
+            CP->resize(ui->graphicsView->width(), CP->height());
+        }
     }
 }
 
 void MainWindow::on_action_scale0_5_triggered()
 {
-    sr=0.5;
+    sr = 0.5;
     scale(sr);
     ui->action_scale0_5->setChecked(true);
 }
 
 void MainWindow::on_action_scale1_triggered()
 {
-    sr=1;
+    sr = 1;
     scale(sr);
     ui->action_scale1->setChecked(true);
 }
 
 void MainWindow::on_action_scale1_5_triggered()
 {
-    sr=1.5;
+    sr = 1.5;
     scale(sr);
     ui->action_scale1_5->setChecked(true);
 }
 
 void MainWindow::on_action_scale2_triggered()
 {
-    sr=2;
+    sr = 2;
     scale(sr);
     ui->action_scale2->setChecked(true);
 }
@@ -683,7 +685,7 @@ void MainWindow::on_action_scale2_triggered()
 void MainWindow::mouseDoubleClickEvent(QMouseEvent* event)
 {
     Q_UNUSED(event);
-    if(player){
+    if (player) {
         EEFullscreen();
     }
 }
@@ -793,7 +795,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         m_point = event->pos();
     }
     CP->show();
-    setCursor(QCursor(Qt::ArrowCursor));
+    setCursor(Qt::ArrowCursor);
     QTimer::singleShot(5000,this,SLOT(hideCP()));
 }
 
@@ -801,6 +803,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_bPressed){
         move(event->pos() - m_point + pos());
+        setCursor(Qt::ClosedHandCursor);
     }
 }
 
@@ -808,6 +811,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     m_bPressed = false;
+    setCursor(Qt::ArrowCursor);
 }
 
 void MainWindow::saveImage(QImage image)
