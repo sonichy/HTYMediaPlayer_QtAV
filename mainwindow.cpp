@@ -816,7 +816,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void MainWindow::saveImage(QImage image)
 {
-    if(cn==16){
+    if (cn==16) {
         imagec[cnn]=image.scaled(320,240);
         QTime t(0,0,0);
         t=t.addMSecs(player->position());
@@ -845,14 +845,16 @@ void MainWindow::saveImage(QImage image)
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     Q_UNUSED(obj);
-    if(event->type() == QEvent::MouseMove){
+    if (event->type() == QEvent::MouseMove) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
         Q_UNUSED(mouseEvent);
         //statusBar()->showMessage(QString("Mouse (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
         //qDebug() << "(" << mouseEvent->pos().x() << mouseEvent->pos().y() << ")";
-        CP->show();
-        setCursor(QCursor(Qt::ArrowCursor));
-        QTimer::singleShot(5000,this,SLOT(hideCP()));
+        if (CP->isHidden()) {
+            CP->show();
+            setCursor(QCursor(Qt::ArrowCursor));
+            QTimer::singleShot(5000,this,SLOT(hideCP()));
+        }
     }
     return false;
 }
