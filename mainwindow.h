@@ -25,6 +25,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+protected:
+    void resizeEvent(QResizeEvent*);
+
 private:
     Ui::MainWindow *ui;
     QString filename, STimeET, mode;
@@ -36,7 +39,6 @@ private:
     AVPlayer *player;
     GraphicsItemRenderer *videoItem;
     QDesktopWidget *desktop;
-    QPoint posw;
     bool m_bPressed;
     QPoint m_point;
     QImage imagec[16];

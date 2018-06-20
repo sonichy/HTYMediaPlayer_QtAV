@@ -28,9 +28,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    ui->setupUi(this);
     m_bPressed = false;
     mode = "";
-    ui->setupUi(this);
+    sr = 1;
 
     QPalette pal(palette());
     pal.setColor(QPalette::Background, Qt::black);
@@ -40,9 +41,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     qApp->installEventFilter(this);
     CP = new ControlPanel(this);
-    CP->move(0,height()-CP->height());
-    CP->resize(width()-ui->tableWidget->width(),CP->height());
-    sr = 1;
+    //CP->move(0,height()-CP->height());
+    //CP->resize(width()-ui->tableWidget->width(),CP->height());
+
     QActionGroup *scaleGroup = new QActionGroup(this);
     scaleGroup->addAction(ui->action_scale0_5);
     scaleGroup->addAction(ui->action_scale1);
@@ -97,8 +98,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player, SIGNAL(error(QtAV::AVError)), this, SLOT(handleError(QtAV::AVError)));
     connect(player,SIGNAL(stateChanged(QtAV::AVPlayer::State)),this,SLOT(stateChange(QtAV::AVPlayer::State)));
 
-    labelTL=new QLabel(this);
-    labelTL->setStyleSheet("color:white;font:20px;background:transparent;");
+    labelTL = new QLabel(this);
+    labelTL->setStyleSheet("color:white; font:20px; background:transparent;");
     labelTL->move(50,50);
 
     desktop = QApplication::desktop();
@@ -112,7 +113,8 @@ MainWindow::MainWindow(QWidget *parent) :
     createPopmenu();
 
     ui->tableWidget->setColumnHidden(1,true);
-    ui->tableWidget->setStyleSheet("QTableWidget{color:white; background-color:black;} QTableWidget::item:selected{background-color:#222222;}");    
+    ui->tableWidget->setStyleSheet("QTableWidget { color:white; background-color:black; }"
+                                   "QTableWidget::item:selected { background-color:#222222; }");
     connect(ui->tableWidget,SIGNAL(cellClicked(int,int)),this,SLOT(playTV(int,int)));
     fillTable("tv.txt");
 
@@ -193,14 +195,12 @@ void MainWindow::on_action_liveList_triggered()
 
 void MainWindow::showHideList()
 {
-    if(ui->tableWidget->isVisible()){
-        ui->tableWidget->setVisible(false);
-        //resize(QSize(width()-ui->tableWidget->width(),height()));
-        CP->resize(this->width(),CP->height());
+    if(ui->tableWidget->isHidden()){
+        ui->tableWidget->show();
+        CP->resize(width() - ui->tableWidget->width(),CP->height());
     }else{
-        ui->tableWidget->setVisible(true);
-        //resize(QSize(width()+ui->tableWidget->width(),height()));
-        CP->resize(this->width()-ui->tableWidget->width(),CP->height());
+        ui->tableWidget->hide();
+        CP->resize(width(),CP->height());
     }
 }
 
@@ -236,7 +236,7 @@ void MainWindow::on_action_info_triggered()
 
 void MainWindow::on_action_capture_triggered()
 {
-    cn=1;
+    cn = 1;
     player->videoCapture()->setAutoSave(true);
     //自动保存在 /home/用户名/Pictures ，不需要手动保存。
     player->videoCapture()->capture();
@@ -252,17 +252,17 @@ void MainWindow::on_action_capture_triggered()
 
 QString MainWindow::SB(qint64 b)
 {
-    QString s="";
+    QString s = "";
     if(b>999999999){
-        s=QString::number(b/(1024*1024*1024.0),'f',2)+"GB";
+        s = QString::number(b/(1024*1024*1024.0),'f',2) + "GB";
     }else{
         if(b>999999){
-            s=QString::number(b/(1024*1024.0),'f',2)+"MB";
+            s = QString::number(b/(1024*1024.0),'f',2) + "MB";
         }else{
             if(b>999){
-                s=QString::number(b/1024.0,'f',2)+"KB";
+                s = QString::number(b/1024.0,'f',2) + "KB";
             }else{
-                s=QString::number(b/1.0,'f',2)+"B";
+                s = QString::number(b/1.0,'f',2) + "B";
             }
         }
     }
@@ -337,9 +337,9 @@ void MainWindow::on_action_rotateCCW_triggered(){
 
 void MainWindow::on_action_volumeUp_triggered()
 {
-    qreal vol=player->audio()->volume();
+    qreal vol = player->audio()->volume();
     if(vol<2){
-        vol+=0.01;
+        vol += 0.01;
         player->audio()->setVolume(vol);        
         CP->ui->sliderVolume->setValue(vol*100);
         qDebug() << vol;
@@ -351,7 +351,7 @@ void MainWindow::on_action_volumeUp_triggered()
 
 void MainWindow::on_action_volumeDown_triggered()
 {
-    qreal vol=player->audio()->volume()-0.01;
+    qreal vol = player->audio()->volume() - 0.01;
     player->audio()->setVolume(vol);    
     CP->ui->sliderVolume->setValue(vol*100);
     qDebug() << vol;
@@ -372,7 +372,7 @@ void MainWindow::on_action_volumeMute_triggered()
         labelTL->show();
         QTimer::singleShot(3000,this,SLOT(timeoutTL()));
     }else{
-        volume=player->audio()->volume()*100;
+        volume = player->audio()->volume()*100;
         player->audio()->setMute(true);        
         CP->ui->sliderVolume->setValue(0);
         CP->ui->pushButtonMute->setIcon(style()->standardIcon(QStyle::SP_MediaVolumeMuted));
@@ -391,17 +391,17 @@ void MainWindow::on_action_help_triggered()
 
 void MainWindow::on_action_changelog_triggered()
 {
-    QString s = "1.7\n(2018-05)\n修复：从右键打开方式无法打开文件。\n(2018-04)\n修复：视频分辨率为0X0时，仍然缩放会出错。\n\n1.6\n(2018-03)\n修复拖动进度条时，进度条被拉回的问题。\n修复：增加从Chrome扩展打开后，调试时窗口无法启动和从外部程序启动打开文件中断。\n\n1.5\n(2017-10)\n支持接收Chrome扩展传来的数据。\n修复放大适合桌面不居中、最大化缩放失效。\n增加解析直播API。\n增加音轨选择。\n增加加速播放、减速播放。\n增加显示错误信息。\n解析分号间隔的视频片段到列表。\n(2017-09-14)\n修复时间栏样式使用rgb没有使用rgba引起的闪烁。\n(2017-08-20)\n增加拖放打开文件(不知为何视频区域无效)。\n\n1.4 (2017-07)\n更新日志太长，消息框改成带滚动条的文本框。\n设计新的浮动透明控制栏，延时自动隐藏，鼠标移动显示。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0 (2017-02)\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。";
-    QDialog *dialog=new QDialog;
+    QString s = "1.8\n(2018-06)\n修复：增加resizeEvent，解决拖动窗口大小、退出全屏，视频无法缩放的问题。\n\n1.7\n(2018-05)\n修复：从右键打开方式无法打开文件。\n(2018-04)\n修复：视频分辨率为0X0时，仍然缩放会出错。\n\n1.6\n(2018-03)\n修复拖动进度条时，进度条被拉回的问题。\n修复：增加从Chrome扩展打开后，调试时窗口无法启动和从外部程序启动打开文件中断。\n\n1.5\n(2017-10)\n支持接收Chrome扩展传来的数据。\n修复放大适合桌面不居中、最大化缩放失效。\n增加解析直播API。\n增加音轨选择。\n增加加速播放、减速播放。\n增加显示错误信息。\n解析分号间隔的视频片段到列表。\n(2017-09-14)\n修复时间栏样式使用rgb没有使用rgba引起的闪烁。\n(2017-08-20)\n增加拖放打开文件(不知为何视频区域无效)。\n\n1.4 (2017-07)\n更新日志太长，消息框改成带滚动条的文本框。\n设计新的浮动透明控制栏，延时自动隐藏，鼠标移动显示。\n全屏缩放背景设置为黑色，视频居中。\n\n1.3 (2017-05)\n记忆全屏前直播列表的显示状态，退出全屏时按状态决定是否显示直播列表。\n直播列表并入窗体。\n\n1.2 (2017-03)\n增加打开方式打开文件。\n右键增加截图菜单。\n快进、快退在左上角显示时间。\n使用动态路径代替绝对路径，由于Qt4和Qt5获取路径的方法不同，使用预处理指令#if选择版本。\n增加剧情连拍。\n\n1.1 (2017-03)\n窗口标题增加台号。\n增加打开截图目录。\n2017-02\n增加导入直播列表功能。\n上一个、下一个按钮换台。\n增加直播列表。\n\n1.0 (2017-02)\n缩放菜单改成单选样式。\n增加香港卫视、北京时间直播源。\n增加缩放。\n解决 GraphicsItemRenderer 大部分全屏问题。\nVideoOutput 改成 GraphicsItemRenderer，支持视频旋转。\n增加截图。\n增加视频信息。\n使用第三方库QtAV代替QMultimedia库，解决快捷键无效的问题。\n解决停止后不能播放的问题。\n静音图标切换和拖动条。\n增加快进、快退。\n增加时间。\n修复拖动进度条卡顿BUG。\n全屏修改进度条样式。\n实现全屏。\n增加视频控件。\n增加控制栏。";
+    QDialog *dialog = new QDialog;
     dialog->setWindowTitle("更新历史");
     dialog->setFixedSize(400,300);
-    QVBoxLayout *vbox=new QVBoxLayout;
-    QTextBrowser *textBrowser=new QTextBrowser;
+    QVBoxLayout *vbox = new QVBoxLayout;
+    QTextBrowser *textBrowser = new QTextBrowser;
     textBrowser->setText(s);
     textBrowser->zoomIn();
     vbox->addWidget(textBrowser);
-    QHBoxLayout *hbox=new QHBoxLayout;
-    QPushButton *btnConfirm=new QPushButton("确定");
+    QHBoxLayout *hbox = new QHBoxLayout;
+    QPushButton *btnConfirm = new QPushButton("确定");
     hbox->addStretch();
     hbox->addWidget(btnConfirm);
     hbox->addStretch();
@@ -409,7 +409,7 @@ void MainWindow::on_action_changelog_triggered()
     dialog->setLayout(vbox);
     dialog->show();
     connect(btnConfirm, SIGNAL(clicked()), dialog, SLOT(accept()));
-    if(dialog->exec()==QDialog::Accepted){
+    if(dialog->exec() == QDialog::Accepted){
         dialog->close();
     }
 }
@@ -421,7 +421,7 @@ void MainWindow::on_action_aboutQtAV_triggered()
 
 void MainWindow::on_action_about_triggered()
 {
-    QMessageBox aboutMB(QMessageBox::NoIcon, "关于", "海天鹰媒体播放器 1.7\n一款基于Qt和QtAV库的媒体播放器。\n作者：黄颖\nE-mail: sonichy@163.com\n主页：sonichy.96.lt\n参考：\nhttps://github.com/wang-bin/QtAV");
+    QMessageBox aboutMB(QMessageBox::NoIcon, "关于", "海天鹰媒体播放器 1.8\n一款基于Qt和QtAV库的媒体播放器。\n作者：黄颖\nE-mail: sonichy@163.com\n主页：sonichy.96.lt\n参考：\nhttps://github.com/wang-bin/QtAV");
     aboutMB.setIconPixmap(QPixmap(":/icon.png"));
     aboutMB.exec();
 }
@@ -466,7 +466,7 @@ void MainWindow::skipBackward()
 void MainWindow::skipForward()
 {
     qDebug() << mode;
-    if(mode=="live"){
+    if(mode == "live"){
         if( ui->tableWidget->currentRow() < ui->tableWidget->rowCount()-1 ){
             ui->tableWidget->setCurrentCell(ui->tableWidget->currentRow()+1,0);
             playTV(ui->tableWidget->currentRow(),0);
@@ -482,35 +482,23 @@ void MainWindow::skipForward()
 
 void MainWindow::enterFullscreen()
 {
-    isListShow = ui->tableWidget->isVisible();
-    posw = pos();
+    isListShow = ui->tableWidget->isVisible();    
     showFullScreen();
     ui->menuBar->hide();
-    videoItem->resizeRenderer(desktop->width(),desktop->height());
+    //videoItem->resizeRenderer(desktop->width(),desktop->height());
     PMAFullscreen->setText("退出全屏");
-    ui->tableWidget->setVisible(false);
-    CP->move(0,desktop->height()-CP->height());
-    CP->resize(desktop->width(),CP->height());
+    ui->tableWidget->hide();
 }
 
 void MainWindow::exitFullscreen()
 {    
     showNormal();
     ui->menuBar->show();
-    //videoItem->resizeRenderer(player->statistics().video_only.width*sr, player->statistics().video_only.height*sr);
-    ui->tableWidget->setVisible(isListShow);
-    int tww;
-    if (ui->tableWidget->isVisible()) {
-        tww = ui->tableWidget->width();
-    } else {
-        tww = 0;
-    }
-    //resize(player->statistics().video_only.width*sr + tww, player->statistics().video_only.height*sr + ui->menuBar->height());
-    //move(posw);
+//    qDebug() << ui->graphicsView->size();
+//    videoItem->resizeRenderer(ui->graphicsView->size());
+    if(isListShow)
+        ui->tableWidget->show();
     PMAFullscreen->setText("全屏");
-    CP->move(0,height()-CP->height());
-    CP->resize(width()-tww,CP->height());
-
 }
 
 void MainWindow::EEFullscreen()
@@ -527,7 +515,7 @@ void MainWindow::durationChange()
     CP->ui->sliderProgress->setRange(0,player->duration());
     qDebug() << player->statistics().video_only.width << "X" << player->statistics().video_only.height;    
     if(player->statistics().video_only.width != 0 || player->statistics().video_only.height != 0){
-        videoItem->resizeRenderer(player->statistics().video_only.width, player->statistics().video_only.height);
+        //videoItem->resizeRenderer(player->statistics().video_only.width, player->statistics().video_only.height);
 //        int tww;
 //        if(ui->tableWidget->isVisible()){
 //            tww=ui->tableWidget->width();
@@ -536,8 +524,8 @@ void MainWindow::durationChange()
 //        }
         resize(player->statistics().video_only.width , player->statistics().video_only.height + ui->menuBar->height());
 //      move((desktop->width() - width())/2, (desktop->height() - height())/2);
-        CP->move(0,height()-CP->height());
-        CP->resize(ui->graphicsView->width(),CP->height());
+        //CP->move(0,height()-CP->height());
+        //CP->resize(ui->graphicsView->width(),CP->height());
     }
 
     // 设置音轨菜单
@@ -787,8 +775,7 @@ void MainWindow::fillTable(QString filename)
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-    {
+    if (event->button() == Qt::LeftButton) {
         m_bPressed = true;
         m_point = event->pos();
     }
@@ -799,7 +786,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    if (m_bPressed){
+    if (m_bPressed) {
         move(event->pos() - m_point + pos());
         setCursor(Qt::ClosedHandCursor);
     }
@@ -1036,4 +1023,21 @@ void MainWindow::sliderProgressReleased()
     labelTL->adjustSize();
     labelTL->show();
     QTimer::singleShot(3000,this,SLOT(timeoutTL()));
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event);
+    qDebug() << ui->tableWidget->isHidden();
+    videoItem->resizeRenderer(ui->graphicsView->size());
+    CP->move(0,height()-CP->height());
+    if(isFullScreen()){
+        CP->resize(width(),CP->height());
+    }else{
+        if(ui->tableWidget->isHidden()){
+            CP->resize(width(),CP->height());
+        }else{
+            CP->resize(width() - ui->tableWidget->width(),CP->height());
+        }
+    }
 }
